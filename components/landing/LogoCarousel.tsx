@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { motion } from "framer-motion"
+import { useEffect, useRef, useState, useCallback, memo } from "react"
 import { cn } from "@/lib/utils"
 
 // Extended sample logos with more variety - monochrome style
@@ -30,56 +29,49 @@ const sampleLogos = [
 
 interface LogoCardProps {
   logo: typeof sampleLogos[0]
-  index: number
 }
 
-function LogoCard({ logo, index }: LogoCardProps) {
+const LogoCard = memo(function LogoCard({ logo }: LogoCardProps) {
   const [isHovered, setIsHovered] = useState(false)
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const cardRef = useRef<HTMLDivElement>(null)
+  const [transform, setTransform] = useState({ rotateX: 0, rotateY: 0 })
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return
     const rect = cardRef.current.getBoundingClientRect()
     const x = (e.clientX - rect.left) / rect.width - 0.5
     const y = (e.clientY - rect.top) / rect.height - 0.5
-    setMousePosition({ x, y })
-  }
+    setTransform({ rotateX: y * -15, rotateY: x * 15 })
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false)
+    setTransform({ rotateX: 0, rotateY: 0 })
+  }, [])
 
   return (
-    <motion.div
+    <div
       ref={cardRef}
       className="relative w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false)
-        setMousePosition({ x: 0, y: 0 })
-      }}
+      onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: index * 0.02, duration: 0.3 }}
-      style={{
-        perspective: "800px",
-      }}
+      style={{ perspective: "800px" }}
     >
-      <motion.div
+      <div
         className={cn(
           "w-full h-full rounded-2xl",
-          "bg-white/[0.03] dark:bg-white/[0.03]",
-          "border border-white/[0.08] dark:border-white/[0.08]",
+          "bg-white/[0.03]",
+          "border border-white/[0.08]",
           "flex items-center justify-center",
-          "transition-all duration-300",
+          "transition-colors duration-200",
           isHovered && "bg-white/[0.06] border-white/[0.15]"
         )}
-        animate={{
-          rotateX: isHovered ? mousePosition.y * -15 : 0,
-          rotateY: isHovered ? mousePosition.x * 15 : 0,
-          scale: isHovered ? 1.02 : 1,
-        }}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
         style={{
+          transform: `rotateX(${isHovered ? transform.rotateX : 0}deg) rotateY(${isHovered ? transform.rotateY : 0}deg) scale(${isHovered ? 1.02 : 1})`,
           transformStyle: "preserve-3d",
+          transition: "transform 0.15s ease-out",
+          willChange: isHovered ? "transform" : "auto",
         }}
       >
         {/* Logo Icon - monochrome */}
@@ -90,29 +82,27 @@ function LogoCard({ logo, index }: LogoCardProps) {
             "border border-foreground/10",
             "flex items-center justify-center",
             "text-foreground/70 font-semibold text-xl md:text-2xl",
-            "transition-all duration-300",
+            "transition-colors duration-200",
             isHovered && "from-primary/20 to-primary/10 border-primary/20 text-primary"
           )}
           style={{
-            transform: isHovered ? "translateZ(20px)" : "translateZ(0px)",
-            transition: "transform 0.3s ease, background 0.3s ease, border-color 0.3s ease, color 0.3s ease",
+            transform: `translateZ(${isHovered ? 20 : 0}px)`,
+            transition: "transform 0.15s ease-out",
           }}
         >
           {logo.icon}
         </div>
 
         {/* Subtle shine effect on hover */}
-        <div
-          className={cn(
-            "absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500",
-            "bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent",
-            isHovered && "opacity-100"
-          )}
-        />
-      </motion.div>
-    </motion.div>
+        {isHovered && (
+          <div
+            className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent"
+          />
+        )}
+      </div>
+    </div>
   )
-}
+})
 
 interface CarouselColumnProps {
   logos: typeof sampleLogos
@@ -120,11 +110,16 @@ interface CarouselColumnProps {
   speed?: number
 }
 
-function CarouselColumn({ logos, direction, speed = 25 }: CarouselColumnProps) {
+const CarouselColumn = memo(function CarouselColumn({ logos, direction, speed = 25 }: CarouselColumnProps) {
   const [isPaused, setIsPaused] = useState(false)
+  const columnRef = useRef<HTMLDivElement>(null)
 
   // Triple the logos for seamless loop
   const tripledLogos = [...logos, ...logos, ...logos]
+
+  // Calculate total height for animation
+  const itemHeight = 128 + 16 // lg:h-32 (128px) + gap-4 (16px)
+  const totalHeight = logos.length * itemHeight
 
   return (
     <div
@@ -132,30 +127,32 @@ function CarouselColumn({ logos, direction, speed = 25 }: CarouselColumnProps) {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <motion.div
+      <div
+        ref={columnRef}
         className="flex flex-col gap-3 md:gap-4"
-        animate={{
-          y: direction === "up" ? [0, -33.33 * logos.length * 3.5] : [-33.33 * logos.length * 3.5, 0],
-        }}
-        transition={{
-          y: {
-            duration: speed,
-            repeat: Infinity,
-            ease: "linear",
-            repeatType: "loop",
-          },
-        }}
         style={{
+          animation: `scroll-${direction} ${speed}s linear infinite`,
           animationPlayState: isPaused ? "paused" : "running",
+          willChange: "transform",
         }}
       >
         {tripledLogos.map((logo, index) => (
-          <LogoCard key={`${logo.id}-${index}`} logo={logo} index={index % logos.length} />
+          <LogoCard key={`${logo.id}-${index}`} logo={logo} />
         ))}
-      </motion.div>
+      </div>
+      <style jsx>{`
+        @keyframes scroll-up {
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(0, -${totalHeight}px, 0); }
+        }
+        @keyframes scroll-down {
+          0% { transform: translate3d(0, -${totalHeight}px, 0); }
+          100% { transform: translate3d(0, 0, 0); }
+        }
+      `}</style>
     </div>
   )
-}
+})
 
 export function LogoCarousel() {
   const [mounted, setMounted] = useState(false)
@@ -196,17 +193,17 @@ export function LogoCarousel() {
         </div>
       </div>
 
-      {/* Bottom gradient fade - stronger */}
-      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none z-10" />
+      {/* Bottom gradient fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
 
       {/* Top gradient fade */}
-      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-background via-background/70 to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
 
       {/* Left fade */}
-      <div className="absolute top-0 left-0 bottom-0 w-24 md:w-32 bg-gradient-to-r from-background via-background/50 to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 left-0 bottom-0 w-16 md:w-20 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
 
       {/* Right fade */}
-      <div className="absolute top-0 right-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-background via-background/50 to-transparent pointer-events-none z-10" />
+      <div className="absolute top-0 right-0 bottom-0 w-12 md:w-16 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
     </div>
   )
 }
