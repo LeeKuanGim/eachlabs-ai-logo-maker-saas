@@ -43,7 +43,7 @@ export function Footer() {
                 <Sparkles className="h-6 w-6 text-primary" />
                 <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full" />
               </div>
-              <span className="font-bold text-xl">Eachlabs</span>
+              <span className="font-bold text-xl">LogoLoco</span>
             </Link>
             <p className="text-muted-foreground text-sm mb-6 max-w-xs">
               Create stunning, professional logos with the power of AI.
@@ -121,7 +121,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Eachlabs. All rights reserved.
+            © {new Date().getFullYear()} LogoLoco. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground">
             Powered by AI. Made with ❤️

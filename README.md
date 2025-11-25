@@ -1,4 +1,4 @@
-# 🎨 Eachlabs AI Logo Maker
+# 🎨 LogoLoco
 
 > **AI destekli logo oluşturma platformu** - Girişimciler ve geliştiriciler için saniyeler içinde profesyonel logolar
 
@@ -25,9 +25,9 @@
 
 ## 🎯 Hakkında
 
-**Eachlabs AI Logo Maker**, uygulama geliştiricileri ve girişimciler için tasarlanmış, yapay zeka destekli bir logo oluşturma platformudur. Tasarım becerisi gerektirmeden, sadece birkaç basit adımda profesyonel kalitede logolar üretmenizi sağlar.
+**LogoLoco**, uygulama geliştiricileri ve girişimciler için tasarlanmış, yapay zeka destekli bir logo oluşturma platformudur. Tasarım becerisi gerektirmeden, sadece birkaç basit adımda profesyonel kalitede logolar üretmenizi sağlar.
 
-### Neden Eachlabs AI Logo Maker?
+### Neden LogoLoco?
 
 - 🚀 **Hızlı**: 60 saniyeden kısa sürede logo oluşturun
 - 🎨 **Profesyonel**: App Store/Google Play kalitesinde sonuçlar

@@ -54,7 +54,7 @@ export function Header() {
               <Sparkles className="h-6 w-6 text-primary" />
               <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full" />
             </div>
-            <span className="hidden sm:inline">Eachlabs</span>
+            <span className="hidden sm:inline">LogoLoco</span>
           </Link>
 
           {/* Desktop Navigation */}

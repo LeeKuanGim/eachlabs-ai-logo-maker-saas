@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Eachlabs AI Logo Maker | Create Professional Logos in Seconds",
+  title: "LogoLoco | Create Professional Logos in Seconds",
   description: "Transform your ideas into stunning, professional logos with AI. No design skills needed. Create app icons, brand logos, and more in under 60 seconds.",
   keywords: ["AI logo maker", "logo generator", "app icon creator", "brand design", "AI design"],
 };

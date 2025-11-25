@@ -1,4 +1,4 @@
-# Eachlabs AI Logo Maker - Next.js Project Documentation
+# LogoLoco - Next.js Project Documentation
 
 ## 1. Project Overview
 
@@ -374,4 +374,4 @@ EACHLABS_API_KEY=your_api_key_here
 
 ## Conclusion
 
-The Eachlabs AI Logo Maker is a modern Next.js 15 application leveraging the App Router pattern for a streamlined AI-powered logo generation service. While currently minimal in scope (no auth, database, or payments), it demonstrates clean architecture with clear separation of concerns and modern React patterns. The application is production-ready for its current feature set but would benefit from the recommended enhancements for a full commercial deployment.
+LogoLoco is a modern Next.js 15 application leveraging the App Router pattern for a streamlined AI-powered logo generation service. While currently minimal in scope (no auth, database, or payments), it demonstrates clean architecture with clear separation of concerns and modern React patterns. The application is production-ready for its current feature set but would benefit from the recommended enhancements for a full commercial deployment.

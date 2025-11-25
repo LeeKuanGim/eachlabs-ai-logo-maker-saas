@@ -1,4 +1,4 @@
-# API Registry - Eachlabs AI Logo Maker
+# API Registry - LogoLoco
 
 ## API Configuration
 

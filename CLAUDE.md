@@ -22,7 +22,7 @@ bun run db:studio    # Open Drizzle Studio GUI
 
 ## Architecture Overview
 
-This is a Next.js 15 AI logo generation SaaS using the App Router.
+LogoLoco is a Next.js 15 AI logo generation SaaS using the App Router.
 
 ### Key Directories
 

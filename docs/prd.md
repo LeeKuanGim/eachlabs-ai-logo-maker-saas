@@ -34,7 +34,7 @@ Uygulama geliştiren yazılımcılar ve bağımsız girişimciler (Indie Hackers
 ### Kullanıcı Hedefleri
 * Kullanıcı, karmaşık "prompt mühendisliği" (prompt engineering) yapmadan, sadece basit kelimelerle (örn: "uçan roket") istediğini anlatabilmeli.
 * Kullanıcı, **Maksimum 3 adımda** sonuca ulaşmalı (Ne istiyorsun? -> Hangi tarz? -> Hangi renkler?).
-* Sonuçlar, "amatör" değil, Eachlabs altyapısı sayesinde App Store'daki "Featured" uygulamalar kalitesinde olmalı.
+* Sonuçlar, "amatör" değil, Eachlabs altyapısı sayesinde App Store'daki "Featured" uygulamalar kalitesinde olmalı. (Ürün adı: LogoLoco)
 
 ### İş (Business) Hedefleri
 * **Kullanım Alışkanlığı:** Kullanıcının kredi sistemini anlaması ve harcamaya teşvik edilmesi (1 Logo = 1 Kredi).

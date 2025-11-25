@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Create Logo | Eachlabs AI Logo Maker",
+  title: "Create Logo | LogoLoco",
   description: "Design your perfect logo with AI. Enter your app name, choose colors, and let our AI create stunning logos for you.",
 };
 
