@@ -1,20 +1,21 @@
-import { LogoMaker } from "@/components/logo-maker";
+import { Header } from "@/components/landing/Header"
+import { HeroSection } from "@/components/landing/HeroSection"
+import { FeaturesSection } from "@/components/landing/FeaturesSection"
+import { ShowcaseSection } from "@/components/landing/ShowcaseSection"
+import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
+import { CTASection } from "@/components/landing/CTASection"
+import { Footer } from "@/components/landing/Footer"
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 md:p-8">
-      <div className="w-full max-w-5xl space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 text-foreground">
-            Eachlabs AI Logo Maker
-          </h1>
-          <p className="text-muted-foreground text-lg max-w-[600px] mx-auto">
-            Girişiminiz için saniyeler içinde profesyonel logolar oluşturun.
-          </p>
-        </div>
-        
-        <LogoMaker />
-      </div>
-    </div>
-  );
+    <main className="min-h-screen bg-background">
+      <Header />
+      <HeroSection />
+      <FeaturesSection />
+      <ShowcaseSection />
+      <HowItWorksSection />
+      <CTASection />
+      <Footer />
+    </main>
+  )
 }

@@ -1,0 +1,171 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import Link from "next/link"
+import dynamic from "next/dynamic"
+import { ArrowRight, Play } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { RainbowButton } from "@/components/ui/rainbow-button"
+import { cn } from "@/lib/utils"
+
+// Dynamically import Three.js components to avoid SSR issues
+const DitherCanvas = dynamic(
+  () => import("@/components/three/DitherCanvas").then((mod) => mod.DitherCanvas),
+  { ssr: false }
+)
+
+const DitherScene = dynamic(
+  () => import("@/components/three/DitherScene").then((mod) => mod.DitherScene),
+  { ssr: false }
+)
+
+export function HeroSection() {
+  const [isVisible, setIsVisible] = useState(false)
+  const sectionRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    // Trigger animations after mount
+    const timer = setTimeout(() => setIsVisible(true), 100)
+    return () => clearTimeout(timer)
+  }, [])
+
+  return (
+    <section
+      ref={sectionRef}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
+    >
+      {/* WebGL Background */}
+      <DitherCanvas className="absolute inset-0 -z-10">
+        <DitherScene
+          showLogo={true}
+          logoPosition={[2, 0.2, 0]}
+          logoScale={1.2}
+        />
+      </DitherCanvas>
+
+      {/* Gradient overlay for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-background pointer-events-none" />
+
+      {/* Content */}
+      <div className="container mx-auto px-4 py-20 md:py-32">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left side - Text content */}
+          <div className="space-y-8 text-center lg:text-left">
+            {/* Badge */}
+            <div
+              className={cn(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium transition-all duration-700",
+                isVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-4"
+              )}
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+              </span>
+              AI-Powered Logo Generation
+            </div>
+
+            {/* Heading */}
+            <h1
+              className={cn(
+                "text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight transition-all duration-700 delay-100",
+                isVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-4"
+              )}
+            >
+              <span className="block">Create Stunning</span>
+              <span className="block bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                Logos in Seconds
+              </span>
+            </h1>
+
+            {/* Description */}
+            <p
+              className={cn(
+                "text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 transition-all duration-700 delay-200",
+                isVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-4"
+              )}
+            >
+              Transform your ideas into professional, app-ready logos with the power of AI.
+              No design skills needed. Just describe, generate, and download.
+            </p>
+
+            {/* CTA Buttons */}
+            <div
+              className={cn(
+                "flex flex-col sm:flex-row gap-4 justify-center lg:justify-start transition-all duration-700 delay-300",
+                isVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-4"
+              )}
+            >
+              <RainbowButton asChild className="h-12 px-8 text-base">
+                <Link href="/create">
+                  Start Creating
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </RainbowButton>
+
+              <Button
+                variant="outline"
+                className="h-12 px-8 text-base"
+                asChild
+              >
+                <Link href="#how-it-works">
+                  <Play className="mr-2 h-4 w-4" />
+                  See How It Works
+                </Link>
+              </Button>
+            </div>
+
+            {/* Stats */}
+            <div
+              className={cn(
+                "flex flex-wrap gap-8 justify-center lg:justify-start pt-4 transition-all duration-700 delay-400",
+                isVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-4"
+              )}
+            >
+              {[
+                { value: "10K+", label: "Logos Created" },
+                { value: "<60s", label: "Generation Time" },
+                { value: "3", label: "AI Models" },
+              ].map((stat) => (
+                <div key={stat.label} className="text-center lg:text-left">
+                  <div className="text-2xl md:text-3xl font-bold">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right side - Space for 3D logo (handled by canvas) */}
+          <div className="hidden lg:block h-[500px]" />
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div
+        className={cn(
+          "absolute bottom-8 left-1/2 -translate-x-1/2 transition-all duration-700 delay-500",
+          isVisible
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4"
+        )}
+      >
+        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+          <span className="text-xs uppercase tracking-wider">Scroll</span>
+          <div className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex justify-center pt-2">
+            <div className="w-1 h-2 rounded-full bg-muted-foreground animate-bounce" />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}

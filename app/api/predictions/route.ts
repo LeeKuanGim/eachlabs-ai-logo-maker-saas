@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
     const prompt = `iOS 16 uyumlu, minimalist ve modern bir uygulama simgesi taslağı oluşturun. Simge, yumuşak yuvarlak köşelere sahip kare bir arka plana sahip olmalı ve canlı ${color1} ile ${color2} renklerinden oluşan sofistike ve asimetrik coolwave bir degrade geçişi içermelidir. Merkeze yerleştirilmiş ${appFocus} temasını yansıtan ikon, sade, temiz ve kullanıcı dostu bir estetiğe sahip olmalı, zarif bir derinlik katmak için hafif gölge ve parlaklık efektleriyle desteklenmelidir. ${appName}'nin adını veya baş harflerini içeren metin, simgenin içinde veya yanında, şık ve yüksek okunabilirlik sağlayacak şekilde entegre edilmelidir. Tasarım, her boyutta netliğini ve tanınabilirliğini koruyarak ölçeklenebilir olmalıdır. Nihai sunum, beyaz, düz bir arka plan üzerinde yapılmalıdır.`
 
-    let input: any = {
+    let input: Record<string, unknown> = {
       prompt,
       num_images: parseInt(outputCount),
       sync_mode: false,
