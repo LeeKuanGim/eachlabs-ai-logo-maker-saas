@@ -1,22 +1,15 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import dynamic from "next/dynamic"
 import { ArrowRight, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RainbowButton } from "@/components/ui/rainbow-button"
+import { LogoCarousel } from "@/components/landing/LogoCarousel"
 import { cn } from "@/lib/utils"
-
-// Import the new 3D scene
-const ModernLogoScene = dynamic(
-  () => import("@/components/three/ModernLogoScene").then((mod) => mod.ModernLogoScene),
-  { ssr: false, loading: () => <div className="w-full h-full bg-transparent" /> }
-)
 
 export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false)
-  const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100)
@@ -25,7 +18,6 @@ export function HeroSection() {
 
   return (
     <section
-      ref={sectionRef}
       className="relative min-h-screen flex items-center overflow-hidden pt-20"
     >
       {/* Background Gradients */}
@@ -116,17 +108,17 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* 3D Scene Area */}
+          {/* Logo Carousel Area */}
           <div
             className={cn(
-              "h-[400px] md:h-[500px] lg:h-[600px] w-full relative transition-opacity duration-1000 delay-500",
+              "h-[400px] md:h-[500px] lg:h-[600px] w-full relative transition-opacity duration-1000 delay-500 overflow-hidden",
               isVisible ? "opacity-100" : "opacity-0"
             )}
           >
-            <ModernLogoScene />
+            <LogoCarousel />
 
-            {/* Glass Backdrop Effect behind the model for better integration */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-primary/20 blur-[100px] rounded-full -z-10" />
+            {/* Ambient glow effect */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-primary/10 blur-[120px] rounded-full -z-10" />
           </div>
         </div>
       </div>
