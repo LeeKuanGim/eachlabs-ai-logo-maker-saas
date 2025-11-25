@@ -18,7 +18,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -32,7 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
 import { RainbowButton } from "@/components/ui/rainbow-button"
 
 const formSchema = z.object({
@@ -48,11 +46,11 @@ const formSchema = z.object({
   color2: z.string().min(2, {
     message: "Lütfen ikinci bir renk giriniz.",
   }),
-  model: z.string({
-    required_error: "Lütfen bir model seçiniz.",
+  model: z.string({ message: "Lütfen bir model seçiniz." }).min(1, {
+    message: "Lütfen bir model seçiniz.",
   }),
-  outputCount: z.string({
-    required_error: "Lütfen çıktı sayısını seçiniz.",
+  outputCount: z.string({ message: "Lütfen çıktı sayısını seçiniz." }).min(1, {
+    message: "Lütfen çıktı sayısını seçiniz.",
   }),
 })
 
