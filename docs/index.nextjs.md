@@ -153,17 +153,14 @@ graph LR
 ## 4. Authentication Details
 
 ### Current Status
-**No user authentication system implemented**
+**Better Auth is integrated and hosted on the API service.**
 
-- No user accounts or sessions
-- No protected routes or API endpoints
-- API key authentication only for external Eachlabs API (server-side)
-- All functionality is publicly accessible
-
-### Security Configuration
-- **Environment Variable**: `EACHLABS_API_KEY` (required, server-side only)
-- **CORS**: Configured in Hono API via `ALLOWED_ORIGINS` env var
-- **Rate Limiting**: None implemented
+- Server: `apps/api/src/auth.ts` using `better-auth` + `drizzleAdapter` on Postgres.
+- Handler: Mounted at `/api/auth/*` in Hono (`apps/api/src/index.ts`).
+- Client: Next.js uses `apps/web/lib/auth-client.ts` (`createAuthClient`) pointing to `NEXT_PUBLIC_API_BASE_URL` (API origin).
+- Required env: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_API_BASE_URL`, `ALLOWED_ORIGINS` (CORS).
+- CORS: `ALLOWED_ORIGINS` comma-separated origins, credentials enabled at the API.
+- Migrations: Auth + app tables live under `apps/api/src/db/migrations`.
 
 ---
 
@@ -173,7 +170,7 @@ graph LR
 
 **Schema Location**: `apps/api/src/db/schema.ts`
 **Connection**: `apps/api/src/db/index.ts`
-**Migrations**: `apps/api/drizzle/`
+**Migrations**: `apps/api/src/db/migrations/`
 
 ### Tables
 

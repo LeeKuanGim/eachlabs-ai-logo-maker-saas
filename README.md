@@ -80,6 +80,7 @@
 
 ### Backend/API
 - **Framework**: [Hono](https://hono.dev/) + Bun runtime (REST-first, edge friendly)
+- **Auth**: [Better Auth](https://better-auth.com/) (server hosted in API, Next.js uses client SDK)
 
 ### Developer Tools
 - **Package Manager**: [Bun](https://bun.sh/) (ana paket yöneticisi)
@@ -194,10 +195,11 @@ eachlabs-ai-logo-maker-saas/
 │   │   └── package.json          # Web app paket tanımı
 │   └── api/                      # Hono + Bun API (DB ve Eachlabs entegrasyonu)
 │       ├── src/
+│       │   ├── auth.ts           # Better Auth server instance
 │       │   ├── db/               # Drizzle şeması & bağlantı
 │       │   ├── routes/           # Hono route'ları (örn. predictions)
 │       │   └── index.ts          # Hono entrypoint (port 3002)
-│       ├── drizzle/              # Göç çıktıları
+│       ├── src/db/migrations/    # Drizzle/Better Auth migrations
 │       ├── drizzle.config.ts     # Drizzle CLI yapılandırması
 │       └── package.json          # API paket tanımı
 │

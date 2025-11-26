@@ -46,7 +46,8 @@ apps/
 ### API Server (`apps/api`)
 - Hono framework running on Bun
 - Drizzle ORM with PostgreSQL
-- Routes in `src/routes/`, database in `src/db/`
+- Better Auth server in `src/auth.ts` (drizzle adapter, handler mounted at `/api/auth/*`)
+- Routes in `src/routes/`, database in `src/db/` (migrations in `src/db/migrations/`)
 
 ### Data Flow
 
@@ -63,10 +64,13 @@ apps/
 - `DATABASE_SSL` - Set to "true" for SSL connections
 - `EACHLABS_API_KEY` - API key for logo generation
 - `PORT` - API server port (default: 3002)
-- `ALLOWED_ORIGINS` - Comma-separated CORS origins
+- `BETTER_AUTH_SECRET` - Required for Better Auth
+- `BETTER_AUTH_URL` - Base URL for Better Auth server (API origin)
+- `ALLOWED_ORIGINS` - Comma-separated CORS origins (credentials enabled)
+- `PGPOOL_MAX`, `PGPOOL_IDLE_MS`, `PGPOOL_CONN_TIMEOUT_MS` - Pool tuning
 
 **Web (`apps/web/.env.local`):**
-- `NEXT_PUBLIC_API_BASE_URL` - API endpoint (default: `http://localhost:3002`)
+- `NEXT_PUBLIC_API_BASE_URL` - API endpoint (required, points to API origin)
 
 ### Key Files
 

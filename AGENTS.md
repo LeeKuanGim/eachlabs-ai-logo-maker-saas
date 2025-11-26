@@ -15,10 +15,11 @@ apps/
 │
 └── api/                 # Hono + Bun API server (port 3002)
     ├── src/
-    │   ├── db/          # Drizzle schema & connection
+    │   ├── auth.ts      # Better Auth server instance (drizzle adapter)
+    │   ├── db/          # Drizzle schema, connection, migrations
     │   ├── routes/      # Hono routes (predictions.ts)
     │   └── index.ts     # Hono entrypoint
-    └── drizzle/         # Generated migrations
+    └── src/db/migrations/ # Generated migrations (Drizzle + Better Auth)
 
 docs/                    # Documentation (API registry, PRD, platform notes)
 ```
@@ -60,11 +61,13 @@ bun run db:studio              # Open Drizzle Studio GUI
 - Pull requests: include summary of changes, relevant screenshots for UI tweaks, and note any lint/test runs. Link issues when applicable.
 
 ## Security & Configuration Tips
-- Required envs for API: `DATABASE_URL`, `EACHLABS_API_KEY`; set `DATABASE_SSL=true` in production.
+- Required envs for API: `DATABASE_URL`, `EACHLABS_API_KEY`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`; set `DATABASE_SSL=true` in production.
 - Required envs for Web: `NEXT_PUBLIC_API_BASE_URL` (default: `http://localhost:3002`).
+- CORS: `ALLOWED_ORIGINS` comma-separated list for the API.
 - Do not commit secrets. `.env` / `.env.local` files are ignored.
 
 ## Architecture Overview
-- Client submits form → `POST /api/predictions` (Hono API) persists request to PostgreSQL and calls Eachlabs API → client polls `GET /api/predictions/{id}` until status is `succeeded`.
+- Auth: Better Auth hosted in API, handler at `/api/auth/*`; Next.js uses auth client pointing at API base URL.
+- Logo flow: Client submits form → `POST /api/predictions` persists request + calls Eachlabs → client polls `GET /api/predictions/{id}` until status is `succeeded`.
 - DB table: `logo_generations` with status/images/provider IDs; indexes on `created_at`, `status`, `provider_prediction_id`.
 - Model mapping: `nano-banana` → `nano-banana`, `seedream-v4` → `seedream-v4-text-to-image`, `reve-text` → `reve-text-to-image`.
