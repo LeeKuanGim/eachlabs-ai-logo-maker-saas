@@ -14,12 +14,18 @@ if (!connectionString) {
 }
 
 const useSsl = process.env.DATABASE_SSL === "true"
+const poolMax = Number(process.env.PGPOOL_MAX ?? 50)
+const poolIdleMs = Number(process.env.PGPOOL_IDLE_MS ?? 30_000)
+const poolConnTimeoutMs = Number(process.env.PGPOOL_CONN_TIMEOUT_MS ?? 5_000)
 
 const pool =
   globalForDb.pool ??
   new Pool({
     connectionString,
     ssl: useSsl ? { rejectUnauthorized: false } : undefined,
+    max: Number.isFinite(poolMax) ? poolMax : 50,
+    idleTimeoutMillis: Number.isFinite(poolIdleMs) ? poolIdleMs : 30_000,
+    connectionTimeoutMillis: Number.isFinite(poolConnTimeoutMs) ? poolConnTimeoutMs : 5_000,
   })
 
 const db = globalForDb.db ?? drizzle(pool, { schema })

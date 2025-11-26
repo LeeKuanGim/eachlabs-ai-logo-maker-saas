@@ -2,6 +2,7 @@ import "dotenv/config"
 import { Hono } from "hono"
 import { cors } from "hono/cors"
 
+import { auth } from "./auth"
 import { predictions } from "./routes/predictions"
 
 const app = new Hono()
@@ -25,6 +26,7 @@ app.use(
 app.get("/", (c) => c.text("API is running"))
 app.get("/health", (c) => c.json({ status: "ok" }))
 
+app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw))
 app.route("/api/predictions", predictions)
 
 const port = Number(process.env.PORT ?? 3002)
