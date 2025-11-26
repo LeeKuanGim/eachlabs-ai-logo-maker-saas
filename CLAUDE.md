@@ -42,6 +42,7 @@ apps/
 - React 19 + TypeScript
 - shadcn/ui components (Radix primitives + Tailwind v4)
 - Path alias: `@/*` maps to `apps/web/`
+- TanStack Query client is provided via `AppProvider`/`QueryProvider` (see `apps/web/app/layout.tsx` and `apps/web/components/providers/query-provider.tsx`). Use TanStack Query for client data fetching, polling, and auth flows.
 
 ### API Server (`apps/api`)
 - Hono framework running on Bun
@@ -77,4 +78,5 @@ apps/
 
 - `apps/api/src/routes/predictions.ts` - Core logo generation logic and Eachlabs integration
 - `apps/api/src/db/schema.ts` - Database schema (`logoGenerations` table)
-- `apps/web/components/logo-maker.tsx` - Main form component with polling logic
+- `apps/web/components/logo-maker.tsx` - Main form component with TanStack Query mutations + polling logic
+- `apps/web/components/mvpblocks/login-form-3.tsx` & `register-form.tsx` - Better Auth client flows powered by TanStack Query

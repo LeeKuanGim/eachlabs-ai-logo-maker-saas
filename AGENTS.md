@@ -50,6 +50,7 @@ bun run db:studio              # Open Drizzle Studio GUI
 - Use `cn` helper for class merging. Keep copy in English.
 - Linting: ESLint 9. Run `bun lint` before pushing.
 - Filenames: kebab-case for files, PascalCase for components, camelCase for variables/functions.
+- Client data fetching/polling (predictions, auth, etc.) should go through TanStack Query. Shared QueryClient lives in `apps/web/components/providers/query-provider.tsx` and is mounted via `AppProvider` in `app/layout.tsx`.
 
 ## Testing Guidelines
 - No formal test suite yet. Add tests alongside features when feasible.
@@ -68,6 +69,6 @@ bun run db:studio              # Open Drizzle Studio GUI
 
 ## Architecture Overview
 - Auth: Better Auth hosted in API, handler at `/api/auth/*`; Next.js uses auth client pointing at API base URL.
-- Logo flow: Client submits form → `POST /api/predictions` persists request + calls Eachlabs → client polls `GET /api/predictions/{id}` until status is `succeeded`.
+- Logo flow: Client submits form → `POST /api/predictions` persists request + calls Eachlabs → client polls `GET /api/predictions/{id}` until status is `succeeded` (implemented with TanStack Query polling).
 - DB table: `logo_generations` with status/images/provider IDs; indexes on `created_at`, `status`, `provider_prediction_id`.
 - Model mapping: `nano-banana` → `nano-banana`, `seedream-v4` → `seedream-v4-text-to-image`, `reve-text` → `reve-text-to-image`.

@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -34,6 +35,8 @@ import {
 } from "@/components/ui/select"
 import { RainbowButton } from "@/components/ui/rainbow-button"
 
+const POLL_INTERVAL_MS = 2000
+
 const formSchema = z.object({
   appName: z.string().min(2, {
     message: "App name must be at least 2 characters.",
@@ -54,6 +57,45 @@ const formSchema = z.object({
     message: "Please choose an output count.",
   }),
 })
+
+type LogoFormValues = z.infer<typeof formSchema>
+
+type PredictionStatus = "queued" | "running" | "succeeded" | "failed"
+
+type PredictionPayload = {
+  status?: unknown
+  output?: unknown
+  images?: unknown
+  error?: unknown
+  message?: unknown
+}
+
+type NormalizedPrediction = {
+  status: PredictionStatus
+  images: string[]
+  errorMessage?: string
+}
+
+const defaultValues: LogoFormValues = {
+  appName: "Acme Finance",
+  appFocus: "Rocket wallet",
+  color1: "Turquoise",
+  color2: "Emerald",
+  model: "nano-banana",
+  outputCount: "2",
+}
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3002"
+const MAX_POLL_DURATION_MS = 5 * 60 * 1000
+
+const statusMap: Record<string, PredictionStatus> = {
+  queued: "queued",
+  running: "running",
+  succeeded: "succeeded",
+  success: "succeeded",
+  failed: "failed",
+  error: "failed",
+}
 
 // Basic color mapping for Turkish color names to CSS values for preview
 const colorMap: Record<string, string> = {
@@ -80,75 +122,162 @@ const getColorValue = (val: string) => {
   return val // Return as is (hex, rgb, or valid css name)
 }
 
-export function LogoMaker() {
-  const [generatedImages, setGeneratedImages] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [generationCount, setGenerationCount] = useState<number>(0)
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3002"
+const parseOutputCount = (value: string) => {
+  const parsed = Number.parseInt(value, 10)
+  return Number.isFinite(parsed) ? Math.max(1, parsed) : 1
+}
 
-  const form = useForm<z.infer<typeof formSchema>>({
+const normalizeStatus = (status: unknown): PredictionStatus => {
+  if (!status || typeof status !== "string") return "running"
+  return statusMap[status.toLowerCase()] ?? "running"
+}
+
+const normalizeImages = (payload: PredictionPayload | null) => {
+  const candidate = payload?.output ?? payload?.images
+
+  if (Array.isArray(candidate)) {
+    return candidate.filter((item): item is string => typeof item === "string")
+  }
+
+  if (typeof candidate === "string") {
+    return [candidate]
+  }
+
+  return []
+}
+
+const readErrorMessage = (payload: PredictionPayload | null, fallback: string) => {
+  if (payload && typeof payload.error === "string") return payload.error
+  if (payload && typeof payload.message === "string") return payload.message
+  return fallback
+}
+
+async function createPredictionRequest(values: LogoFormValues) {
+  const response = await fetch(`${API_BASE_URL}/api/predictions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(values),
+  })
+
+  const data = (await response.json().catch(() => null)) as { predictionID?: unknown; error?: unknown } | null
+
+  if (!response.ok || !data) {
+    throw new Error(readErrorMessage(data, "Failed to start logo generation"))
+  }
+
+  const predictionId = typeof data.predictionID === "string" ? data.predictionID : null
+
+  if (!predictionId) {
+    throw new Error("Prediction ID missing in response")
+  }
+
+  return predictionId
+}
+
+async function fetchPredictionStatus(predictionId: string): Promise<NormalizedPrediction> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/predictions/${predictionId}`)
+    const data = (await response.json().catch(() => null)) as PredictionPayload | null
+
+    if (!response.ok || !data) {
+      return {
+        status: "failed",
+        images: [],
+        errorMessage: readErrorMessage(data, "Failed to fetch prediction status"),
+      }
+    }
+
+    const errorMessageCandidate = readErrorMessage(data, "")
+
+    return {
+      status: normalizeStatus(data.status),
+      images: normalizeImages(data),
+      errorMessage: errorMessageCandidate || undefined,
+    }
+  } catch (error) {
+    return {
+      status: "failed",
+      images: [],
+      errorMessage: error instanceof Error ? error.message : "Failed to fetch prediction status",
+    }
+  }
+}
+
+export function LogoMaker() {
+  const queryClient = useQueryClient()
+  const [generationCount, setGenerationCount] = useState<number>(parseOutputCount(defaultValues.outputCount))
+  const [predictionId, setPredictionId] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const pollDeadlineRef = useRef<number | null>(null)
+
+  const form = useForm<LogoFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      appName: "Acme Finance",
-      appFocus: "Rocket wallet",
-      color1: "Turquoise",
-      color2: "Emerald",
-      model: "nano-banana",
-      outputCount: "2",
+    defaultValues,
+  })
+
+  const createPrediction = useMutation({
+    mutationFn: createPredictionRequest,
+    onMutate: (values) => {
+      setErrorMessage(null)
+      setGenerationCount(parseOutputCount(values.outputCount))
+      pollDeadlineRef.current = null
+      setPredictionId(null)
+      queryClient.removeQueries({ queryKey: ["prediction-status"], exact: false })
+    },
+    onSuccess: (id, values) => {
+      setPredictionId(id)
+      setGenerationCount(parseOutputCount(values.outputCount))
+      pollDeadlineRef.current = Date.now() + MAX_POLL_DURATION_MS
+    },
+    onError: (error) => {
+      setErrorMessage(error instanceof Error ? error.message : "Failed to start logo generation")
     },
   })
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true)
-    setGeneratedImages([])
-    setGenerationCount(parseInt(values.outputCount))
-    const startTime = Date.now()
-    const maxPollDurationMs = 5 * 60 * 1000
+  const predictionQuery = useQuery<NormalizedPrediction>({
+    queryKey: ["prediction-status", predictionId],
+    queryFn: () => fetchPredictionStatus(predictionId as string),
+    enabled: Boolean(predictionId),
+    refetchInterval: (query) => {
+      if (!predictionId) return false
+      if (pollDeadlineRef.current && Date.now() > pollDeadlineRef.current) return false
 
-    try {
-      const createRes = await fetch(`${apiBaseUrl}/api/predictions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      })
+      const status = query.state.data?.status
+      if (!status) return POLL_INTERVAL_MS
+      if (status === "succeeded" || status === "failed") return false
 
-      if (!createRes.ok) {
-        throw new Error("Failed to start generation")
+      return POLL_INTERVAL_MS
+    },
+    retry: 2,
+    staleTime: 0,
+  })
+
+  useEffect(() => {
+    if (!predictionId || !pollDeadlineRef.current) return
+
+    const timer = setInterval(() => {
+      if (pollDeadlineRef.current && Date.now() > pollDeadlineRef.current) {
+        setErrorMessage("Generation timed out. Please try again.")
+        setPredictionId(null)
+        pollDeadlineRef.current = null
       }
+    }, 1000)
 
-      const { predictionID } = await createRes.json()
+    return () => clearInterval(timer)
+  }, [predictionId])
 
-      while (true) {
-        if (Date.now() - startTime > maxPollDurationMs) {
-          console.error("Generation timed out after 5 minutes")
-          setIsLoading(false)
-          break
-        }
+  const isPolling = Boolean(predictionId) && (predictionQuery.isPending || predictionQuery.isFetching || predictionQuery.isRefetching)
+  const isLoading = createPrediction.isPending || isPolling
+  const resultImages = predictionQuery.data?.status === "succeeded" ? predictionQuery.data.images : []
+  const queryErrorMessage =
+    predictionQuery.data?.status === "failed"
+      ? predictionQuery.data.errorMessage ?? "Logo generation failed. Please try again."
+      : null
+  const combinedError = errorMessage ?? queryErrorMessage
+  const shouldShowResults = isLoading || resultImages.length > 0 || Boolean(combinedError)
 
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-
-        const pollRes = await fetch(`${apiBaseUrl}/api/predictions/${predictionID}`)
-        if (!pollRes.ok) continue
-
-        const result = await pollRes.json()
-
-        if (result.status === "success") {
-          const output = Array.isArray(result.output)
-            ? result.output
-            : [result.output]
-          setGeneratedImages(output)
-          setIsLoading(false)
-          break
-        } else if (result.status === "failed" || result.status === "error") {
-          console.error("Generation failed", result)
-          setIsLoading(false)
-          break
-        }
-      }
-    } catch (error) {
-      console.error(error)
-      setIsLoading(false)
-    }
+  function onSubmit(values: LogoFormValues) {
+    createPrediction.mutate(values)
   }
 
   return (
@@ -172,10 +301,10 @@ export function LogoMaker() {
                       <FormLabel className="font-semibold text-foreground/80">App Name</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Input 
-                            placeholder="e.g. PixelPilot" 
-                            {...field} 
-                            className="pr-10 h-11 bg-background border-input/60 focus-visible:ring-1" 
+                          <Input
+                            placeholder="e.g. PixelPilot"
+                            {...field}
+                            className="pr-10 h-11 bg-background border-input/60 focus-visible:ring-1"
                           />
                           <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50">
                             <FileText className="h-5 w-5" />
@@ -194,10 +323,10 @@ export function LogoMaker() {
                       <FormLabel className="font-semibold text-foreground/80">App Focus</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Input 
-                            placeholder="e.g. Flying rocket, Wallet" 
-                            {...field} 
-                            className="pr-10 h-11 bg-background border-input/60 focus-visible:ring-1" 
+                          <Input
+                            placeholder="e.g. Flying rocket, Wallet"
+                            {...field}
+                            className="pr-10 h-11 bg-background border-input/60 focus-visible:ring-1"
                           />
                           <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50">
                             <ImageIcon className="h-5 w-5" />
@@ -216,12 +345,12 @@ export function LogoMaker() {
                       <FormLabel className="font-semibold text-foreground/80">Color 1</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Input 
-                            placeholder="e.g. Turquoise" 
-                            {...field} 
-                            className="pr-10 h-11 bg-background border-input/60 focus-visible:ring-1" 
+                          <Input
+                            placeholder="e.g. Turquoise"
+                            {...field}
+                            className="pr-10 h-11 bg-background border-input/60 focus-visible:ring-1"
                           />
-                          <div 
+                          <div
                             className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-sm border shadow-sm"
                             style={{ backgroundColor: getColorValue(field.value) }}
                           />
@@ -238,13 +367,13 @@ export function LogoMaker() {
                     <FormItem>
                       <FormLabel className="font-semibold text-foreground/80">Color 2</FormLabel>
                       <FormControl>
-                         <div className="relative">
-                          <Input 
-                            placeholder="e.g. Purple" 
-                            {...field} 
-                            className="pr-10 h-11 bg-background border-input/60 focus-visible:ring-1" 
+                        <div className="relative">
+                          <Input
+                            placeholder="e.g. Purple"
+                            {...field}
+                            className="pr-10 h-11 bg-background border-input/60 focus-visible:ring-1"
                           />
-                          <div 
+                          <div
                             className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-sm border shadow-sm"
                             style={{ backgroundColor: getColorValue(field.value) }}
                           />
@@ -322,12 +451,17 @@ export function LogoMaker() {
                   </>
                 )}
               </RainbowButton>
+              {combinedError && !isLoading && (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {combinedError}
+                </div>
+              )}
             </form>
           </Form>
         </CardContent>
 
         {/* Loading State or Result */}
-        {(isLoading || generatedImages.length > 0) && (
+        {shouldShowResults && (
           <CardFooter className="flex flex-col items-start gap-4 pt-8">
             <div className="w-full space-y-4">
               <h3 className="font-medium text-sm text-muted-foreground">
@@ -340,14 +474,14 @@ export function LogoMaker() {
                     <div key={i} className="aspect-square rounded-[2rem] bg-muted animate-pulse" />
                   ))}
                 </div>
-              ) : (
+              ) : resultImages.length > 0 ? (
                 <div className="grid grid-cols-2 gap-8">
-                  {generatedImages.map((img, i) => (
+                  {resultImages.map((img, i) => (
                     <div
                       key={i}
                       className="group relative aspect-square rounded-[2rem] overflow-hidden border bg-white/50 shadow-sm hover:shadow-md transition-all duration-300"
                     >
-                       <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent z-10 pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent z-10 pointer-events-none" />
                       <Image
                         src={img}
                         alt={`Generated logo ${i + 1}`}
@@ -366,6 +500,10 @@ export function LogoMaker() {
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {combinedError ?? "Logo generation failed. Please try again."}
                 </div>
               )}
             </div>

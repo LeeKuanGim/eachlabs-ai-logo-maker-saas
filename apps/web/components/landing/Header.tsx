@@ -15,17 +15,15 @@ const navLinks = [
 
 export function Header() {
   const { setTheme, resolvedTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
-
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
     }
 
+    handleScroll()
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
@@ -73,7 +71,7 @@ export function Header() {
           {/* Right side */}
           <div className="flex items-center gap-2">
             {/* Theme toggle */}
-            {mounted && (
+            {resolvedTheme ? (
               <Button
                 variant="ghost"
                 size="icon"
@@ -94,6 +92,8 @@ export function Header() {
                 )} />
                 <span className="sr-only">Toggle theme</span>
               </Button>
+            ) : (
+              <div className="h-10 w-10" />
             )}
 
             {/* CTA Button */}

@@ -54,6 +54,36 @@ Some of the actions are reactive. The client uses [nano-store](https://github.co
 
 The client also uses [better-fetch](https://github.com/bekacru/better-fetch) to make the requests. You can pass the fetch configuration to the client.
 
+### Client usage with TanStack Query
+
+For client-side forms (sign in/up) we wrap the app with a shared TanStack Query client (see `app/layout.tsx` → `AppProvider` → `QueryProvider`). You can then use `useMutation` to drive UI state, toasts, and errors:
+
+```tsx title="RegisterForm.tsx"
+"use client"
+import { useMutation } from "@tanstack/react-query"
+import { toast } from "sonner"
+import { authClient } from "@/lib/auth-client"
+
+export function RegisterForm() {
+  const register = useMutation({
+    mutationFn: (body: { name: string; email: string; password: string }) =>
+      authClient.signUp.email(body).then((res) => {
+        if (!res?.data) throw new Error(res?.error?.message ?? "Failed to create account")
+        return res.data
+      }),
+    onSuccess: () => {
+      toast.success("Account created")
+      // e.g. router.refresh()
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Registration failed")
+    },
+  })
+
+  // render form and call register.mutate(formValues)
+}
+```
+
 ## RSC and Server actions
 
 The `api` object exported from the auth instance contains all the actions that you can perform on the server. Every endpoint made inside Better Auth is a invocable as a function. Including plugins endpoints.
@@ -396,4 +426,3 @@ Or manually:
 * Change function name: `middleware` → `proxy`
 
 All Better Auth methods work identically. See the [Next.js migration guide](https://nextjs.org/docs/app/api-reference/file-conventions/proxy#migration-to-proxy) for details.
-
