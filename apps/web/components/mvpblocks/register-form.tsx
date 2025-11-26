@@ -286,7 +286,9 @@ export default function RegisterForm() {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    className="border-border bg-secondary text-foreground hover:bg-secondary/80 flex items-center justify-center rounded-lg border px-4 py-2.5 text-sm shadow-sm"
+                    disabled
+                    title="Social sign-up coming soon"
+                    className="border-border bg-secondary text-muted-foreground flex items-center justify-center rounded-lg border px-4 py-2.5 text-sm shadow-sm"
                   >
                     <Image
                       src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -300,7 +302,9 @@ export default function RegisterForm() {
                   </button>
                   <button
                     type="button"
-                    className="border-border bg-secondary text-foreground hover:bg-secondary/80 flex items-center justify-center rounded-lg border px-4 py-2.5 text-sm shadow-sm"
+                    disabled
+                    title="Social sign-up coming soon"
+                    className="border-border bg-secondary text-muted-foreground flex items-center justify-center rounded-lg border px-4 py-2.5 text-sm shadow-sm"
                   >
                     <Github className="h-5 w-5" />
                     <span className="ml-2">GitHub</span>

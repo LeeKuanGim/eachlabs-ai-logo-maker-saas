@@ -35,6 +35,8 @@ import {
 } from "@/components/ui/select"
 import { RainbowButton } from "@/components/ui/rainbow-button"
 
+const POLL_INTERVAL_MS = 2000
+
 const formSchema = z.object({
   appName: z.string().min(2, {
     message: "App name must be at least 2 characters.",
@@ -219,10 +221,8 @@ export function LogoMaker() {
       setErrorMessage(null)
       setGenerationCount(parseOutputCount(values.outputCount))
       pollDeadlineRef.current = null
-
-      if (predictionId) {
-        queryClient.removeQueries({ queryKey: ["prediction-status", predictionId], exact: true })
-      }
+      setPredictionId(null)
+      queryClient.removeQueries({ queryKey: ["prediction-status"], exact: false })
     },
     onSuccess: (id, values) => {
       setPredictionId(id)
@@ -243,10 +243,10 @@ export function LogoMaker() {
       if (pollDeadlineRef.current && Date.now() > pollDeadlineRef.current) return false
 
       const status = query.state.data?.status
-      if (!status) return 2000
+      if (!status) return POLL_INTERVAL_MS
       if (status === "succeeded" || status === "failed") return false
 
-      return 2000
+      return POLL_INTERVAL_MS
     },
     retry: 2,
     staleTime: 0,

@@ -36,7 +36,8 @@ export default function SignInPage() {
       });
 
       if (!result?.data) {
-        throw new Error(result?.error?.message ?? 'Invalid email or password');
+        const message = result?.error?.message || 'Sign-in failed. Please try again.';
+        throw new Error(message);
       }
 
       return result.data;
@@ -46,7 +47,7 @@ export default function SignInPage() {
       router.refresh();
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Sign-in failed');
+      toast.error(error instanceof Error ? error.message : 'Sign-in failed. Please check your connection and try again.');
     },
   });
 
@@ -89,14 +90,13 @@ export default function SignInPage() {
             <div className="brand-side relative m-4 rounded-3xl bg-[url('https://cdn.midjourney.com/299f94f9-ecb9-4b26-bead-010b8d8b01d9/0_0.webp?w=800&q=80')] bg-cover p-12 text-white">
               <div>
                 <div className="mb-12 text-lg font-semibold uppercase">
-                  PixelForge Studio
+                  LogoLoco
                 </div>
                 <h1 className="mb-4 text-6xl font-medium">
-                  Create, Design, and Innovate
+                  Modern logos, fast.
                 </h1>
                 <p className="mb-12 text-xl opacity-80">
-                  Join thousands of creators who trust PixelForge Studio to
-                  bring their vision to life
+                  Join builders using LogoLoco to ship polished branding in minutes.
                 </p>
 
                 <div className="space-y-6">
@@ -255,6 +255,8 @@ export default function SignInPage() {
                     <button
                       type="button"
                       className="border-border bg-secondary text-foreground hover:bg-secondary/80 flex items-center justify-center rounded-lg border px-4 py-2.5 text-sm shadow-sm"
+                    disabled
+                    title="Social sign-in coming soon"
                     >
                       <Image
                         src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -269,6 +271,8 @@ export default function SignInPage() {
                     <button
                       type="button"
                       className="border-border bg-secondary text-foreground hover:bg-secondary/80 flex items-center justify-center rounded-lg border px-4 py-2.5 text-sm shadow-sm"
+                    disabled
+                    title="Social sign-in coming soon"
                     >
                       <Github className="h-5 w-5" />
                       <span className="ml-2">GitHub</span>
@@ -278,7 +282,7 @@ export default function SignInPage() {
 
                 <div className="text-muted-foreground mt-8 text-center text-sm">
                   Don&apos;t have an account?{' '}
-                  <a href="#" className="text-primary hover:text-primary/80">
+                  <a href="/register" className="text-primary hover:text-primary/80">
                     Sign up for free
                   </a>
                 </div>

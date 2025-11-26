@@ -15,9 +15,7 @@ const navLinks = [
 
 export function Header() {
   const { setTheme, resolvedTheme } = useTheme()
-  const [isScrolled, setIsScrolled] = useState(() =>
-    typeof window !== "undefined" ? window.scrollY > 20 : false
-  )
+  const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -25,6 +23,7 @@ export function Header() {
       setIsScrolled(window.scrollY > 20)
     }
 
+    handleScroll()
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
@@ -72,26 +71,30 @@ export function Header() {
           {/* Right side */}
           <div className="flex items-center gap-2">
             {/* Theme toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="relative overflow-hidden"
-            >
-              <Sun className={cn(
-                "h-5 w-5 transition-all duration-300",
-                resolvedTheme === "dark"
-                  ? "rotate-90 scale-0 opacity-0"
-                  : "rotate-0 scale-100 opacity-100"
-              )} />
-              <Moon className={cn(
-                "absolute h-5 w-5 transition-all duration-300",
-                resolvedTheme === "dark"
-                  ? "rotate-0 scale-100 opacity-100"
-                  : "-rotate-90 scale-0 opacity-0"
-              )} />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
+            {resolvedTheme ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="relative overflow-hidden"
+              >
+                <Sun className={cn(
+                  "h-5 w-5 transition-all duration-300",
+                  resolvedTheme === "dark"
+                    ? "rotate-90 scale-0 opacity-0"
+                    : "rotate-0 scale-100 opacity-100"
+                )} />
+                <Moon className={cn(
+                  "absolute h-5 w-5 transition-all duration-300",
+                  resolvedTheme === "dark"
+                    ? "rotate-0 scale-100 opacity-100"
+                    : "-rotate-90 scale-0 opacity-0"
+                )} />
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            ) : (
+              <div className="h-10 w-10" />
+            )}
 
             {/* CTA Button */}
             <Button asChild className="hidden sm:inline-flex">
