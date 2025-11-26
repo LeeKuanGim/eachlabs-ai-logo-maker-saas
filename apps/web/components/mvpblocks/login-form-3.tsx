@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Github,
 } from 'lucide-react';
+import Image from 'next/image';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
@@ -228,10 +229,13 @@ export default function SignInPage() {
                       type="button"
                       className="border-border bg-secondary text-foreground hover:bg-secondary/80 flex items-center justify-center rounded-lg border px-4 py-2.5 text-sm shadow-sm"
                     >
-                      <img
+                      <Image
                         src="https://www.svgrepo.com/show/475656/google-color.svg"
                         className="h-5 w-5"
                         alt="Google"
+                        width={20}
+                        height={20}
+                        priority
                       />
                       <span className="ml-2">Google</span>
                     </button>

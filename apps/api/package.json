@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@better-auth/cli": "^0.7.3",
+    "@types/pg": "^8.15.6",
     "bun-types": "1.2.22",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.7",

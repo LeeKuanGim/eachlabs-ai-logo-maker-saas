@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, useCallback, memo } from "react"
+import { useRef, useState, useCallback, memo } from "react"
 import { cn } from "@/lib/utils"
 
 // Extended sample logos with more variety - monochrome style
@@ -155,16 +155,6 @@ const CarouselColumn = memo(function CarouselColumn({ logos, direction, speed = 
 })
 
 export function LogoCarousel() {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return <div className="w-full h-[450px] md:h-[550px] lg:h-[600px]" />
-  }
-
   // Split logos into 5 columns
   const column1 = sampleLogos.slice(0, 4)
   const column2 = sampleLogos.slice(4, 8)
