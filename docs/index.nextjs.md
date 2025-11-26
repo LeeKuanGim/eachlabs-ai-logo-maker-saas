@@ -1,42 +1,49 @@
-# LogoLoco - Next.js Project Documentation
+# LogoLoco - Project Documentation
 
 ## 1. Project Overview
 
 ### Stack Summary
-- **Framework**: Next.js 15.5.6 (App Router)
-- **Runtime**: Node.js
-- **Language**: TypeScript 5.x
-- **Styling**: Tailwind CSS 4.x with custom components
-- **UI Library**: Radix UI primitives with custom shadcn/ui components
-- **Form Handling**: React Hook Form 7.66.1 with Zod validation
-- **Package Manager**: Bun (based on bun.lock presence)
+- **Monorepo**: Turborepo with Bun workspaces
+- **Frontend**: Next.js 15.5 (App Router) + React 19 + TypeScript
+- **Backend**: Hono framework on Bun runtime
+- **Database**: PostgreSQL with Drizzle ORM
+- **Styling**: Tailwind CSS 4.x with shadcn/ui components
+- **Form Handling**: React Hook Form 7.x with Zod validation
+- **Package Manager**: Bun
 
 ### Application Type
 A **SaaS AI-powered logo generation application** that allows users to create professional logos for their businesses using multiple AI models.
 
 ### Key Features
 - Multi-model AI logo generation (3 models: Nano Banana, Seedream v4, Reve Text)
-- Real-time generation status tracking
-- Turkish language interface
+- Real-time generation status tracking with polling
 - Color-based logo generation with gradient support
 - Batch image generation (up to 4 images at once)
 - Download functionality for generated logos
+- Database persistence of generation history
 
 ### Architecture Overview
-- **Frontend**: React 19.1.0 with Server Components
-- **Backend**: Next.js API routes handling AI model integration
-- **External Services**: Eachlabs AI API for image generation
-- **State Management**: Local component state with React hooks
-- **Data Fetching**: Client-side fetch with polling for status updates
+```
+┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│   Next.js Web   │─────▶│   Hono API      │─────▶│  Eachlabs API   │
+│   (port 3000)   │      │   (port 3002)   │      │   (external)    │
+└─────────────────┘      └────────┬────────┘      └─────────────────┘
+                                  │
+                                  ▼
+                         ┌─────────────────┐
+                         │   PostgreSQL    │
+                         │   (Drizzle)     │
+                         └─────────────────┘
+```
 
 ---
 
 ## 2. API Registry
 
 ### Base Configuration
-- **API Base Path**: `/api`
+- **API Base URL**: `http://localhost:3002` (configurable via `NEXT_PUBLIC_API_BASE_URL`)
 - **External API**: `https://api.eachlabs.ai/v1/prediction/`
-- **Authentication**: API key-based (X-API-Key header)
+- **Authentication**: API key-based (X-API-Key header for Eachlabs)
 
 ### Endpoints
 
@@ -47,7 +54,7 @@ A **SaaS AI-powered logo generation application** that allows users to create pr
 ```typescript
 {
   appName: string      // Application name (min 2 chars)
-  appFocus: string     // Application focus/theme (min 3 chars)
+  appFocus: string     // Application focus/theme (min 2 chars)
   color1: string       // Primary color
   color2: string       // Secondary color
   model: string        // Model selection: "nano-banana" | "seedream-v4" | "reve-text"
@@ -58,28 +65,22 @@ A **SaaS AI-powered logo generation application** that allows users to create pr
 **Response**:
 ```typescript
 {
-  predictionID: string  // Unique prediction identifier
+  predictionID: string  // Provider prediction identifier
+  prediction: object    // Full Eachlabs response (for debugging)
 }
 ```
 
 **Model-Specific Parameters**:
-- **nano-banana**:
-  - output_format: "png"
-  - aspect_ratio: "1:1"
-  - limit_generations: true
-- **seedream-v4**:
-  - image_size: "square_hd"
-  - enable_safety_checker: true
-- **reve-text**:
-  - aspect_ratio: "1:1"
-  - output_format: "png"
+- **nano-banana**: `output_format: "png"`, `aspect_ratio: "1:1"`, `limit_generations: true`
+- **seedream-v4**: `image_size: "square_hd"`, `enable_safety_checker: true`
+- **reve-text**: `aspect_ratio: "1:1"`, `output_format: "png"`
 
 **Error Responses**:
-- 400: Invalid model selected
+- 400: Invalid request body / Invalid model selected
 - 500: EACHLABS_API_KEY not configured
-- 500: Internal server error
+- 502: Failed to reach provider / Invalid provider response
 
-#### GET /api/predictions/[id]
+#### GET /api/predictions/{id}
 **Purpose**: Retrieve prediction status and results
 
 **Path Parameters**:
@@ -88,15 +89,16 @@ A **SaaS AI-powered logo generation application** that allows users to create pr
 **Response**:
 ```typescript
 {
-  status: "processing" | "success" | "failed" | "error"
-  output?: string | string[]  // Generated image URLs (on success)
-  error?: string              // Error message (on failure)
+  status: "queued" | "running" | "success" | "failed"
+  output?: string[]  // Generated image URLs (on success)
+  // ... full Eachlabs response passthrough
 }
 ```
 
 **Error Responses**:
+- 400: Invalid prediction id
 - 500: EACHLABS_API_KEY not configured
-- 500: Internal server error
+- 502: Failed to reach provider
 
 ---
 
@@ -104,12 +106,11 @@ A **SaaS AI-powered logo generation application** that allows users to create pr
 
 ### Component Architecture
 
-#### Main Page (`app/page.tsx`)
+#### Main Page (`apps/web/app/page.tsx`)
 - **Type**: Server Component
-- **Data Fetching**: None (static content)
-- **Purpose**: Landing page with title and LogoMaker component embedding
+- **Purpose**: Landing page with modular sections (Header, Hero, Features, etc.)
 
-#### LogoMaker Component (`components/logo-maker.tsx`)
+#### LogoMaker Component (`apps/web/components/logo-maker.tsx`)
 - **Type**: Client Component (`"use client"`)
 - **Location**: Main application logic
 - **State Management**: Local React state with useState
@@ -124,17 +125,10 @@ graph LR
     C --> D[Receive predictionID]
     D --> E[Poll GET /api/predictions/id]
     E --> F{Status Check}
-    F -->|processing| E
+    F -->|running/queued| E
     F -->|success| G[Display Images]
     F -->|failed| H[Show Error]
 ```
-
-### API-to-Component Mapping
-
-| Component | API Endpoint | Method | Purpose |
-|-----------|-------------|---------|---------|
-| LogoMaker | `/api/predictions` | POST | Create new prediction |
-| LogoMaker | `/api/predictions/[id]` | GET | Poll for results |
 
 ### Form Schema & Validation
 ```typescript
@@ -149,7 +143,7 @@ graph LR
 ```
 
 ### UI Components Used
-- **Form Components**: Input, Select, Button
+- **Form Components**: Input, Select, Button (shadcn/ui)
 - **Layout**: Card, CardHeader, CardContent
 - **Feedback**: Skeleton (loading), RainbowButton (CTA)
 - **Icons**: Lucide React icons
@@ -159,37 +153,58 @@ graph LR
 ## 4. Authentication Details
 
 ### Current Status
-**No authentication system implemented**
+**No user authentication system implemented**
 
-The application currently operates without user authentication:
 - No user accounts or sessions
 - No protected routes or API endpoints
-- API key authentication only for external Eachlabs API
+- API key authentication only for external Eachlabs API (server-side)
 - All functionality is publicly accessible
 
 ### Security Configuration
-- **Environment Variable**: `EACHLABS_API_KEY` (required)
-- **API Key Usage**: Server-side only, never exposed to client
-- **CORS**: Default Next.js CORS configuration
+- **Environment Variable**: `EACHLABS_API_KEY` (required, server-side only)
+- **CORS**: Configured in Hono API via `ALLOWED_ORIGINS` env var
 - **Rate Limiting**: None implemented
 
 ---
 
 ## 5. ORM & Database Summary
 
-### Current Status
-**No database or ORM integration**
+### Database: PostgreSQL with Drizzle ORM
 
-The application operates in a stateless manner:
-- No data persistence
-- No user data storage
-- No generation history tracking
-- All data is ephemeral and session-based
+**Schema Location**: `apps/api/src/db/schema.ts`
+**Connection**: `apps/api/src/db/index.ts`
+**Migrations**: `apps/api/drizzle/`
 
-### Data Storage
-- Generated images are stored on external Eachlabs servers
-- Image URLs are returned to the client
-- No local storage or caching implemented
+### Tables
+
+#### `logo_generations`
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key (auto-generated) |
+| app_name | TEXT | Application name |
+| app_focus | TEXT | Application focus/theme |
+| color1 | VARCHAR(64) | Primary color |
+| color2 | VARCHAR(64) | Secondary color |
+| model | VARCHAR(64) | AI model used |
+| output_count | INTEGER | Number of images requested |
+| prompt | TEXT | Generated prompt sent to AI |
+| status | ENUM | queued, running, succeeded, failed |
+| provider_prediction_id | VARCHAR(128) | Eachlabs prediction ID |
+| images | JSONB | Array of generated image URLs |
+| provider_response | JSONB | Full provider response |
+| error | TEXT | Error message (if failed) |
+| created_at | TIMESTAMP | Creation timestamp |
+| updated_at | TIMESTAMP | Last update timestamp |
+
+**Indexes**: `created_at`, `status`, `provider_prediction_id`
+
+### Database Commands
+```bash
+bun run db:generate  # Generate migrations from schema changes
+bun run db:migrate   # Run pending migrations
+bun run db:push      # Push schema directly (dev only)
+bun run db:studio    # Open Drizzle Studio GUI
+```
 
 ---
 
@@ -198,7 +213,6 @@ The application operates in a stateless manner:
 ### Current Status
 **No payment system implemented**
 
-The application currently has:
 - No payment processing
 - No subscription management
 - No usage limits or quotas
@@ -210,18 +224,19 @@ The application currently has:
 
 ### Request Pipeline
 ```
-Client Request → Next.js Router → API Route Handler → Eachlabs API → Response
+Client Request → Next.js (web) → Hono API → PostgreSQL + Eachlabs API → Response
 ```
+
+### API Server Features
+- CORS middleware with configurable origins
+- Request timeout handling (default 30s for Eachlabs calls)
+- Zod validation on all endpoints
+- Graceful error handling with appropriate status codes
 
 ### Error Handling
 - API routes include try-catch blocks
-- Graceful error responses with appropriate status codes
+- Database errors logged but don't crash the server
 - Client-side error display through UI state
-
-### Performance Optimizations
-- Turbopack enabled for development and build
-- Component-level code splitting
-- Font optimization with Next.js font loading
 
 ---
 
@@ -230,23 +245,16 @@ Client Request → Next.js Router → API Route Handler → Eachlabs API → Res
 ### Current Security Posture
 
 #### Strengths
-- API key stored in environment variable
-- Server-side API communication only
+- API key stored in environment variable (server-side only)
 - Input validation with Zod schemas
-- No sensitive data stored
+- CORS configuration for allowed origins
+- Separate API server (not exposed through Next.js)
 
 #### Areas for Improvement
 - No rate limiting implemented
 - No request signing or CSRF protection
-- No input sanitization beyond type validation
 - No audit logging
-
-### Recommendations
-1. Implement rate limiting for API endpoints
-2. Add request validation middleware
-3. Implement proper error logging
-4. Consider adding user authentication for production
-5. Add usage quotas and monitoring
+- No user authentication
 
 ---
 
@@ -255,23 +263,15 @@ Client Request → Next.js Router → API Route Handler → Eachlabs API → Res
 ### Current Performance Characteristics
 
 #### Strengths
-- Turbopack optimization enabled
-- Minimal bundle size (no heavy dependencies)
+- Turbopack optimization for Next.js builds
 - Efficient polling mechanism with 2-second intervals
-- Component-based code splitting
+- 5-minute timeout prevents hung requests
+- Bun runtime for fast API responses
 
 #### Bottlenecks
 - Synchronous polling could be optimized with WebSockets
-- No caching of generated images
+- No caching of prediction status
 - No CDN integration for static assets
-- No image optimization for generated logos
-
-### Optimization Opportunities
-1. Implement WebSocket for real-time status updates
-2. Add Redis caching for prediction status
-3. Implement image CDN for generated logos
-4. Add progressive image loading
-5. Consider implementing service workers for offline support
 
 ---
 
@@ -279,99 +279,95 @@ Client Request → Next.js Router → API Route Handler → Eachlabs API → Res
 
 ### Eachlabs AI API
 - **Purpose**: AI-powered logo generation
+- **Base URL**: `https://api.eachlabs.ai/v1/prediction`
+- **Authentication**: API key via X-API-Key header
 - **Models Available**:
-  - Nano Banana: Fast, minimalist designs
-  - Seedream v4: High-quality, detailed images
-  - Reve Text: Text-focused logo generation
-- **Authentication**: API key-based
-- **Endpoints Used**:
-  - POST `/v1/prediction/` - Create prediction
-  - GET `/v1/prediction/{id}` - Get status
-
-### Dependencies Overview
-- **UI Framework**: Radix UI components
-- **Styling**: Tailwind CSS with custom configuration
-- **Forms**: React Hook Form + Zod
-- **Animations**: Tailwind animations
-- **Icons**: Lucide React
+  - `nano-banana`: Fast, minimalist designs
+  - `seedream-v4-text-to-image`: High-quality, detailed images
+  - `reve-text-to-image`: Text-focused logo generation
 
 ---
 
 ## 11. Development & Deployment
 
-### Scripts
-```json
-{
-  "dev": "next dev --turbopack",
-  "build": "next build --turbopack",
-  "start": "next start",
-  "lint": "eslint"
-}
+### Scripts (from monorepo root)
+```bash
+bun dev                        # Start both web (3000) and API (3002)
+bun run build                  # Build all apps
+bun lint                       # Lint all apps
+bun start                      # Start production servers
+
+bun run dev -- --filter=web    # Only web app
+bun run dev -- --filter=api    # Only API server
 ```
 
 ### Environment Configuration
-Required environment variables:
+
+**API (`apps/api/.env`):**
 ```bash
-EACHLABS_API_KEY=your_api_key_here
+DATABASE_URL=postgres://user:pass@host:port/db
+DATABASE_SSL=true              # For production
+EACHLABS_API_KEY=your_key
+PORT=3002                      # Optional, default 3002
+ALLOWED_ORIGINS=http://localhost:3000  # Comma-separated
+```
+
+**Web (`apps/web/.env.local`):**
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3002
 ```
 
 ### File Structure
 ```
 /
-├── app/
-│   ├── api/
-│   │   └── predictions/
-│   │       ├── route.ts          # Create prediction
-│   │       └── [id]/
-│   │           └── route.ts      # Get prediction status
-│   ├── layout.tsx                # Root layout
-│   ├── page.tsx                  # Home page
-│   └── globals.css               # Global styles
-├── components/
-│   ├── logo-maker.tsx           # Main app component
-│   └── ui/                      # Reusable UI components
-├── lib/
-│   └── utils.ts                 # Utility functions
-└── docs/
-    ├── prd.md                   # Product requirements
-    └── eachlabs/                # Model documentation
+├── apps/
+│   ├── web/                          # Next.js frontend
+│   │   ├── app/
+│   │   │   ├── layout.tsx            # Root layout
+│   │   │   ├── page.tsx              # Landing page
+│   │   │   └── globals.css           # Global styles
+│   │   ├── components/
+│   │   │   ├── logo-maker.tsx        # Main app component
+│   │   │   ├── landing/              # Landing page sections
+│   │   │   └── ui/                   # shadcn/ui components
+│   │   └── lib/
+│   │       └── utils.ts              # Utility functions (cn)
+│   │
+│   └── api/                          # Hono API server
+│       ├── src/
+│       │   ├── index.ts              # Hono entrypoint
+│       │   ├── routes/
+│       │   │   └── predictions.ts    # Prediction endpoints
+│       │   └── db/
+│       │       ├── index.ts          # Database connection
+│       │       └── schema.ts         # Drizzle schema
+│       ├── drizzle/                  # Generated migrations
+│       └── drizzle.config.ts         # Drizzle CLI config
+│
+├── docs/                             # Documentation
+├── turbo.json                        # Turborepo config
+└── package.json                      # Root workspace config
 ```
 
 ---
 
-## 12. Future Enhancements
+## 12. API Inventory
 
-### Recommended Improvements
-1. **Authentication System**: Add user accounts and session management
-2. **Database Integration**: Store generation history and user preferences
-3. **Payment System**: Implement credits or subscription model
-4. **Enhanced UX**: Add preview, editing, and variation features
-5. **Analytics**: Track usage patterns and popular configurations
-6. **Internationalization**: Expand beyond Turkish language
-7. **API Rate Limiting**: Protect against abuse
-8. **Caching Strategy**: Implement Redis for better performance
-9. **WebSocket Integration**: Real-time status updates
-10. **Progressive Web App**: Offline support and installability
-
-### Technical Debt
-- Add comprehensive error boundaries
-- Implement proper logging system
-- Add unit and integration tests
-- Improve TypeScript type coverage
-- Add API documentation (OpenAPI/Swagger)
-- Implement CI/CD pipeline
-
----
-
-## API Inventory (CSV Format)
-
-| Endpoint | Method | Auth Required | Request Type | Response Type | Used By |
-|----------|--------|--------------|--------------|---------------|---------|
-| /api/predictions | POST | No | JSON | JSON | LogoMaker |
-| /api/predictions/[id] | GET | No | None | JSON | LogoMaker |
+| Endpoint | Method | Auth | Request | Response | Handler |
+|----------|--------|------|---------|----------|---------|
+| /api/predictions | POST | None | JSON body | predictionID | `apps/api/src/routes/predictions.ts` |
+| /api/predictions/{id} | GET | None | Path param | Prediction status | `apps/api/src/routes/predictions.ts` |
+| / | GET | None | None | "API is running" | `apps/api/src/index.ts` |
+| /health | GET | None | None | `{status: "ok"}` | `apps/api/src/index.ts` |
 
 ---
 
 ## Conclusion
 
-LogoLoco is a modern Next.js 15 application leveraging the App Router pattern for a streamlined AI-powered logo generation service. While currently minimal in scope (no auth, database, or payments), it demonstrates clean architecture with clear separation of concerns and modern React patterns. The application is production-ready for its current feature set but would benefit from the recommended enhancements for a full commercial deployment.
+LogoLoco is a modern monorepo application with a clear separation between the Next.js frontend and Hono API backend. The architecture supports:
+- Independent scaling of web and API
+- Database persistence with Drizzle ORM
+- Clean API boundaries with Zod validation
+- Efficient AI integration with polling-based status updates
+
+For production deployment, consider adding user authentication, rate limiting, and payment integration.
