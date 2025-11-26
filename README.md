@@ -113,6 +113,12 @@ DATABASE_URL=postgres://user:pass@host:port/db
 DATABASE_SSL=true # opsiyonel, prod için önerilir
 EACHLABS_API_KEY=your_api_key_here
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3002
+BETTER_AUTH_SECRET=change-me
+BETTER_AUTH_URL=http://localhost:3002
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3002
+PGPOOL_MAX=50
+PGPOOL_IDLE_MS=30000
+PGPOOL_CONN_TIMEOUT_MS=5000
 ```
 
 ### Adım 4: Geliştirme Sunucusunu Başlatın
