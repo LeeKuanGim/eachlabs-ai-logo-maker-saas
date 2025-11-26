@@ -6,10 +6,17 @@ import { predictions } from "./routes/predictions"
 
 const app = new Hono()
 
+const allowedOrigins =
+  process.env.ALLOWED_ORIGINS?.split(",").map((origin) => origin.trim()).filter(Boolean) ?? [
+    "http://localhost:3000",
+    "http://localhost:3002",
+  ]
+
 app.use(
   "*",
   cors({
-    origin: (origin) => origin ?? "*",
+    origin: allowedOrigins,
+    credentials: true,
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type", "X-API-Key", "Authorization"],
   })

@@ -13,6 +13,35 @@ const MODEL_MAP: Record<string, string> = {
   "reve-text": "reve-text-to-image",
 }
 
+const statusMap: Record<string, string> = {
+  success: "succeeded",
+  failed: "failed",
+  running: "running",
+  queued: "queued",
+}
+
+const DEFAULT_FETCH_TIMEOUT_MS = Number(process.env.EACHLABS_TIMEOUT_MS ?? 30_000)
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = DEFAULT_FETCH_TIMEOUT_MS) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    return await fetch(url, { ...init, signal: controller.signal })
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function safeJson(response: Response) {
+  try {
+    return await response.json()
+  } catch (error) {
+    console.error("Failed to parse provider response:", error)
+    return null
+  }
+}
+
 const requestSchema = z.object({
   appName: z.string().min(2),
   appFocus: z.string().min(2),
@@ -21,6 +50,7 @@ const requestSchema = z.object({
   model: z.enum(["nano-banana", "seedream-v4", "reve-text"]),
   outputCount: z.union([z.string(), z.number()]).optional(),
 })
+const paramsSchema = z.object({ id: z.string().min(1) })
 
 export const predictions = new Hono()
 
@@ -104,7 +134,7 @@ predictions.post("/", async (c) => {
       }
     }
 
-    const response = await fetch(`${EACHLABS_API_URL}/`, {
+    const response = await fetchWithTimeout(`${EACHLABS_API_URL}/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -115,9 +145,50 @@ predictions.post("/", async (c) => {
         version: "0.0.1",
         input,
       }),
+    }).catch((error) => {
+      console.error("Prediction request failed:", error)
+      return null
     })
 
-    const prediction = await response.json().catch(() => ({}))
+    if (!response) {
+      if (generationId) {
+        try {
+          await db
+            .update(logoGenerations)
+            .set({
+              status: "failed",
+              error: "Failed to reach provider",
+              updatedAt: new Date(),
+            })
+            .where(eq(logoGenerations.id, generationId))
+        } catch (dbError) {
+          console.error("Failed to update generation status:", dbError)
+        }
+      }
+
+      return c.json({ error: "Failed to reach provider" }, 502)
+    }
+
+    const prediction = await safeJson(response)
+
+    if (!prediction) {
+      if (generationId) {
+        try {
+          await db
+            .update(logoGenerations)
+            .set({
+              status: "failed",
+              error: "Invalid provider response",
+              updatedAt: new Date(),
+            })
+            .where(eq(logoGenerations.id, generationId))
+        } catch (dbError) {
+          console.error("Failed to update generation status:", dbError)
+        }
+      }
+
+      return c.json({ error: "Invalid provider response" }, 502)
+    }
 
     if (!response.ok) {
       if (generationId) {
@@ -189,21 +260,37 @@ predictions.post("/", async (c) => {
 
 predictions.get("/:id", async (c) => {
   try {
-    const id = c.req.param("id")
+    const parsedParams = paramsSchema.safeParse({ id: c.req.param("id") })
+    if (!parsedParams.success) {
+      return c.json({ error: "Invalid prediction id" }, 400)
+    }
+
+    const { id } = parsedParams.data
     const apiKey = process.env.EACHLABS_API_KEY
 
     if (!apiKey) {
       return c.json({ error: "EACHLABS_API_KEY is not set" }, 500)
     }
 
-    const response = await fetch(`${EACHLABS_API_URL}/${id}`, {
+    const response = await fetchWithTimeout(`${EACHLABS_API_URL}/${id}`, {
       method: "GET",
       headers: {
         "X-API-Key": apiKey,
       },
+    }).catch((error) => {
+      console.error("Prediction fetch failed:", error)
+      return null
     })
 
-    const prediction = await response.json().catch(() => ({}))
+    if (!response) {
+      return c.json({ error: "Failed to reach provider" }, 502)
+    }
+
+    const prediction = await safeJson(response)
+
+    if (!prediction) {
+      return c.json({ error: "Invalid provider response" }, 502)
+    }
 
     if (response.ok && prediction) {
       const imagesCandidate = prediction?.output ?? prediction?.images
@@ -211,12 +298,7 @@ predictions.get("/:id", async (c) => {
         ? imagesCandidate.map((item: unknown) => (typeof item === "string" ? item : JSON.stringify(item)))
         : []
 
-      const status =
-        prediction.status === "success"
-          ? "succeeded"
-          : prediction.status === "failed"
-            ? "failed"
-            : "running"
+      const status = statusMap[prediction.status] ?? "running"
 
       try {
         await db

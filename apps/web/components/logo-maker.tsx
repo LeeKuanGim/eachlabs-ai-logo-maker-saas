@@ -354,7 +354,7 @@ export function LogoMaker() {
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 50vw, 33vw"
-                        priority
+                        priority={i === 0}
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
                         <Button variant="secondary" size="sm" className="rounded-full" asChild>
