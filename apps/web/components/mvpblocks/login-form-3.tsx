@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import {
   Mail,
   Lock,
@@ -14,20 +16,43 @@ import {
   Github,
 } from 'lucide-react';
 import Image from 'next/image';
+import { toast } from 'sonner';
+
+import { authClient } from '@/lib/auth-client';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const router = useRouter();
+
+  const signInMutation = useMutation({
+    mutationFn: async () => {
+      const result = await authClient.signIn.email({
+        email,
+        password,
+        dontRememberMe: !rememberMe,
+      });
+
+      if (!result?.data) {
+        throw new Error(result?.error?.message ?? 'Invalid email or password');
+      }
+
+      return result.data;
+    },
+    onSuccess: () => {
+      toast.success('Signed in successfully');
+      router.refresh();
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Sign-in failed');
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      alert('Login successful! (This is a demo)');
-      setLoading(false);
-    }, 2000);
+    signInMutation.mutate();
   };
 
   return (
@@ -190,6 +215,8 @@ export default function SignInPage() {
                     <label className="text-muted-foreground flex items-center text-sm">
                       <input
                         type="checkbox"
+                        checked={rememberMe}
+                        onChange={(event) => setRememberMe(event.target.checked)}
                         className="border-border text-primary h-4 w-4 rounded"
                       />
                       <span className="ml-2">Remember me</span>
@@ -205,9 +232,9 @@ export default function SignInPage() {
                   <button
                     type="submit"
                     className="login-btn relative flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-medium text-white transition-all duration-300"
-                    disabled={loading}
+                    disabled={signInMutation.isPending}
                   >
-                    {loading ? (
+                    {signInMutation.isPending ? (
                       <>
                         <Loader2 className="h-5 w-5 animate-spin" />
                         <span className="ml-2">Signing in...</span>
