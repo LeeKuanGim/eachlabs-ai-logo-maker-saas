@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { anonymous } from "better-auth/plugins"
 import { db, schema } from "./db"
 
 const authSecret = process.env.BETTER_AUTH_SECRET
@@ -23,4 +24,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  plugins: [
+    anonymous({
+      emailDomainName: "guest.logoloco.local",
+    }),
+  ],
 })

@@ -15,7 +15,7 @@ apps/
 │
 └── api/                 # Hono + Bun API server (port 3002)
     ├── src/
-    │   ├── auth.ts      # Better Auth server instance (drizzle adapter)
+    │   ├── auth.ts      # Better Auth server instance (drizzle adapter, anonymous plugin)
     │   ├── db/          # Drizzle schema, connection, migrations
     │   ├── routes/      # Hono routes (predictions.ts)
     │   └── index.ts     # Hono entrypoint

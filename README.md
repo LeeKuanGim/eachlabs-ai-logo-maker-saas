@@ -80,7 +80,7 @@
 
 ### Backend/API
 - **Framework**: [Hono](https://hono.dev/) + Bun runtime (REST-first, edge friendly)
-- **Auth**: [Better Auth](https://better-auth.com/) (server hosted in API, Next.js uses client SDK)
+- **Auth**: [Better Auth](https://better-auth.com/) (server hosted in API, Next.js uses client SDK) with anonymous sessions enabled
 
 ### Developer Tools
 - **Package Manager**: [Bun](https://bun.sh/) (ana paket yöneticisi)

@@ -161,6 +161,7 @@ graph LR
 - Required env: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_API_BASE_URL`, `ALLOWED_ORIGINS` (CORS).
 - CORS: `ALLOWED_ORIGINS` comma-separated origins, credentials enabled at the API.
 - Migrations: Auth + app tables live under `apps/api/src/db/migrations`.
+- Plugins: Anonymous auth enabled (server + client) for guest sessions.
 
 ---
 

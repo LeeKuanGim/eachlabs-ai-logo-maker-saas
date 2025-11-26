@@ -47,6 +47,7 @@ apps/
 - Hono framework running on Bun
 - Drizzle ORM with PostgreSQL
 - Better Auth server in `src/auth.ts` (drizzle adapter, handler mounted at `/api/auth/*`)
+- Anonymous auth plugin enabled
 - Routes in `src/routes/`, database in `src/db/` (migrations in `src/db/migrations/`)
 
 ### Data Flow
