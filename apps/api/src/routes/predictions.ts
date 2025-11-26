@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import { eq } from "drizzle-orm"
 import { z } from "zod"
+import type { StatusCode } from "hono/utils/http-status"
 
 import { db } from "../db"
 import { logoGenerations } from "../db/schema"
@@ -168,7 +169,7 @@ predictions.post("/", async (c) => {
         }
       }
 
-      return c.json({ error: "Failed to reach provider" }, 502 as any)
+      return c.json({ error: "Failed to reach provider" }, 502)
     }
 
     const prediction = await safeJson<Record<string, unknown>>(response)
@@ -189,7 +190,7 @@ predictions.post("/", async (c) => {
         }
       }
 
-      return c.json({ error: "Invalid provider response" }, 502 as any)
+      return c.json({ error: "Invalid provider response" }, 502)
     }
 
     if (!response.ok) {
@@ -216,7 +217,9 @@ predictions.post("/", async (c) => {
           ? String(prediction.message)
           : undefined) || "Failed to create prediction"
 
-      return c.json({ error: message }, response.status as any)
+      return c.newResponse(JSON.stringify({ error: message }), response.status as StatusCode, {
+        "Content-Type": "application/json",
+      })
     }
 
     const providerPredictionId = (() => {
@@ -324,13 +327,13 @@ predictions.get("/:id", async (c) => {
     })
 
     if (!response) {
-      return c.json({ error: "Failed to reach provider" }, 502 as any)
+      return c.json({ error: "Failed to reach provider" }, 502)
     }
 
     const prediction = await safeJson<Record<string, unknown>>(response)
 
     if (!prediction) {
-      return c.json({ error: "Invalid provider response" }, 502 as any)
+      return c.json({ error: "Invalid provider response" }, 502)
     }
 
     if (response.ok && prediction) {
@@ -365,12 +368,14 @@ predictions.get("/:id", async (c) => {
           ? String(prediction.message)
           : undefined) || "Failed to fetch prediction"
 
-      return c.json({ error: message }, response.status as any)
+      return c.newResponse(JSON.stringify({ error: message }), response.status as StatusCode, {
+        "Content-Type": "application/json",
+      })
     }
 
     return c.json(prediction)
   } catch (error) {
     console.error("Prediction fetch error:", error)
-    return c.json({ error: "Internal server error" }, 500 as any)
+    return c.json({ error: "Internal server error" }, 500)
   }
 })
