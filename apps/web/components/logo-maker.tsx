@@ -4,6 +4,7 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import Image from "next/image"
 import { Loader2, Wand2, Download, FileText, Image as ImageIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -83,6 +84,7 @@ export function LogoMaker() {
   const [generatedImages, setGeneratedImages] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [generationCount, setGenerationCount] = useState<number>(0)
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3002"
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -104,7 +106,7 @@ export function LogoMaker() {
     const maxPollDurationMs = 5 * 60 * 1000
 
     try {
-      const createRes = await fetch("/api/predictions", {
+      const createRes = await fetch(`${apiBaseUrl}/api/predictions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -125,7 +127,7 @@ export function LogoMaker() {
 
         await new Promise((resolve) => setTimeout(resolve, 2000))
 
-        const pollRes = await fetch(`/api/predictions/${predictionID}`)
+        const pollRes = await fetch(`${apiBaseUrl}/api/predictions/${predictionID}`)
         if (!pollRes.ok) continue
 
         const result = await pollRes.json()
@@ -346,10 +348,13 @@ export function LogoMaker() {
                       className="group relative aspect-square rounded-[2rem] overflow-hidden border bg-white/50 shadow-sm hover:shadow-md transition-all duration-300"
                     >
                        <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent z-10 pointer-events-none" />
-                      <img
+                      <Image
                         src={img}
                         alt={`Generated logo ${i + 1}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                        priority={i === 0}
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
                         <Button variant="secondary" size="sm" className="rounded-full" asChild>
