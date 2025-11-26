@@ -13,7 +13,9 @@ const MODEL_MAP: Record<string, string> = {
   "reve-text": "reve-text-to-image",
 }
 
-const statusMap: Record<string, string> = {
+type ProviderStatus = "queued" | "running" | "succeeded" | "failed"
+
+const statusMap: Record<string, ProviderStatus> = {
   success: "succeeded",
   failed: "failed",
   running: "running",
@@ -33,9 +35,9 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = DEFA
   }
 }
 
-async function safeJson(response: Response) {
+async function safeJson<T = unknown>(response: Response): Promise<T | null> {
   try {
-    return await response.json()
+    return (await response.json()) as T
   } catch (error) {
     console.error("Failed to parse provider response:", error)
     return null
@@ -166,10 +168,10 @@ predictions.post("/", async (c) => {
         }
       }
 
-      return c.json({ error: "Failed to reach provider" }, 502)
+      return c.json({ error: "Failed to reach provider" }, 502 as any)
     }
 
-    const prediction = await safeJson(response)
+    const prediction = await safeJson<Record<string, unknown>>(response)
 
     if (!prediction) {
       if (generationId) {
@@ -187,7 +189,7 @@ predictions.post("/", async (c) => {
         }
       }
 
-      return c.json({ error: "Invalid provider response" }, 502)
+      return c.json({ error: "Invalid provider response" }, 502 as any)
     }
 
     if (!response.ok) {
@@ -197,7 +199,10 @@ predictions.post("/", async (c) => {
             .update(logoGenerations)
             .set({
               status: "failed",
-              error: prediction?.message || "Failed to create prediction",
+              error:
+                (prediction && typeof prediction === "object" && "message" in prediction
+                  ? String(prediction.message)
+                  : undefined) || "Failed to create prediction",
               updatedAt: new Date(),
             })
             .where(eq(logoGenerations.id, generationId))
@@ -206,17 +211,53 @@ predictions.post("/", async (c) => {
         }
       }
 
-      return c.json(
-        { error: prediction?.message || "Failed to create prediction" },
-        response.status
-      )
+      const message =
+        (prediction && typeof prediction === "object" && "message" in prediction
+          ? String(prediction.message)
+          : undefined) || "Failed to create prediction"
+
+      return c.json({ error: message }, response.status as any)
     }
 
-    const providerPredictionId = prediction?.id ?? prediction?.prediction?.id ?? generationId
-    const imagesCandidate = prediction?.output ?? prediction?.images
+    const providerPredictionId = (() => {
+      const fromRoot =
+        prediction &&
+        typeof prediction === "object" &&
+        "id" in prediction &&
+        typeof (prediction as { id?: unknown }).id === "string"
+          ? (prediction as { id?: string }).id
+          : null
+
+      if (fromRoot) return fromRoot
+
+      const nested =
+        prediction &&
+        typeof prediction === "object" &&
+        "prediction" in prediction &&
+        (prediction as { prediction?: unknown }).prediction &&
+        typeof (prediction as { prediction?: unknown }).prediction === "object" &&
+        typeof (prediction as { prediction?: { id?: unknown } }).prediction?.id === "string"
+          ? ((prediction as { prediction?: { id?: string } }).prediction?.id as string)
+          : null
+
+      if (nested) return nested
+
+      return generationId
+    })()
+
+    const imagesCandidate =
+      prediction && typeof prediction === "object" && "output" in prediction
+        ? (prediction as Record<string, unknown>).output
+        : prediction && typeof prediction === "object" && "images" in prediction
+          ? (prediction as Record<string, unknown>).images
+          : undefined
+
     const imageList = Array.isArray(imagesCandidate)
       ? imagesCandidate.map((item: unknown) => (typeof item === "string" ? item : JSON.stringify(item)))
       : []
+
+    const providerResponse =
+      prediction && typeof prediction === "object" ? (prediction as Record<string, unknown>) : null
 
     if (generationId) {
       try {
@@ -226,7 +267,7 @@ predictions.post("/", async (c) => {
             status: "succeeded",
             providerPredictionId,
             images: imageList,
-            providerResponse: prediction,
+            providerResponse,
             updatedAt: new Date(),
           })
           .where(eq(logoGenerations.id, generationId))
@@ -283,13 +324,13 @@ predictions.get("/:id", async (c) => {
     })
 
     if (!response) {
-      return c.json({ error: "Failed to reach provider" }, 502)
+      return c.json({ error: "Failed to reach provider" }, 502 as any)
     }
 
-    const prediction = await safeJson(response)
+    const prediction = await safeJson<Record<string, unknown>>(response)
 
     if (!prediction) {
-      return c.json({ error: "Invalid provider response" }, 502)
+      return c.json({ error: "Invalid provider response" }, 502 as any)
     }
 
     if (response.ok && prediction) {
@@ -298,7 +339,10 @@ predictions.get("/:id", async (c) => {
         ? imagesCandidate.map((item: unknown) => (typeof item === "string" ? item : JSON.stringify(item)))
         : []
 
-      const status = statusMap[prediction.status] ?? "running"
+      const status: ProviderStatus =
+        prediction && typeof prediction === "object" && "status" in prediction
+          ? statusMap[String((prediction as { status?: unknown }).status)] ?? "running"
+          : "running"
 
       try {
         await db
@@ -316,15 +360,17 @@ predictions.get("/:id", async (c) => {
     }
 
     if (!response.ok) {
-      return c.json(
-        { error: prediction?.message || "Failed to fetch prediction" },
-        response.status
-      )
+      const message =
+        (prediction && typeof prediction === "object" && "message" in prediction
+          ? String(prediction.message)
+          : undefined) || "Failed to fetch prediction"
+
+      return c.json({ error: message }, response.status as any)
     }
 
     return c.json(prediction)
   } catch (error) {
     console.error("Prediction fetch error:", error)
-    return c.json({ error: "Internal server error" }, 500)
+    return c.json({ error: "Internal server error" }, 500 as any)
   }
 })
