@@ -83,6 +83,7 @@ export function LogoMaker() {
   const [generatedImages, setGeneratedImages] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [generationCount, setGenerationCount] = useState<number>(0)
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3002"
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -104,7 +105,7 @@ export function LogoMaker() {
     const maxPollDurationMs = 5 * 60 * 1000
 
     try {
-      const createRes = await fetch("/api/predictions", {
+      const createRes = await fetch(`${apiBaseUrl}/api/predictions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -125,7 +126,7 @@ export function LogoMaker() {
 
         await new Promise((resolve) => setTimeout(resolve, 2000))
 
-        const pollRes = await fetch(`/api/predictions/${predictionID}`)
+        const pollRes = await fetch(`${apiBaseUrl}/api/predictions/${predictionID}`)
         if (!pollRes.ok) continue
 
         const result = await pollRes.json()

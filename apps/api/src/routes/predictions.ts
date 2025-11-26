@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server"
-import { z } from "zod"
+import { Hono } from "hono"
 import { eq } from "drizzle-orm"
-import { db } from "@/db"
-import { logoGenerations } from "@/db/schema"
+import { z } from "zod"
 
-const EACHLABS_API_URL = "https://api.eachlabs.ai/v1/prediction/"
+import { db } from "../db"
+import { logoGenerations } from "../db/schema"
+
+const EACHLABS_API_URL = "https://api.eachlabs.ai/v1/prediction"
 
 const MODEL_MAP: Record<string, string> = {
   "nano-banana": "nano-banana",
@@ -21,37 +22,32 @@ const requestSchema = z.object({
   outputCount: z.union([z.string(), z.number()]).optional(),
 })
 
-export async function POST(req: Request) {
+export const predictions = new Hono()
+
+predictions.post("/", async (c) => {
   let generationId: string | null = null
 
   try {
-    const body = await req.json()
+    const body = await c.req.json()
     const parsedBody = requestSchema.safeParse(body)
 
     if (!parsedBody.success) {
-      return NextResponse.json(
+      return c.json(
         { error: "Invalid request body", details: parsedBody.error.format() },
-        { status: 400 }
+        400
       )
     }
 
     const { appName, appFocus, color1, color2, model, outputCount } = parsedBody.data
-
     const apiKey = process.env.EACHLABS_API_KEY
 
     if (!apiKey) {
-      return NextResponse.json(
-        { error: "EACHLABS_API_KEY is not set" },
-        { status: 500 }
-      )
+      return c.json({ error: "EACHLABS_API_KEY is not set" }, 500)
     }
 
     const selectedModel = MODEL_MAP[model]
     if (!selectedModel) {
-      return NextResponse.json(
-        { error: "Invalid model selected" },
-        { status: 400 }
-      )
+      return c.json({ error: "Invalid model selected" }, 400)
     }
 
     const prompt = `Design an iOS 16–ready, minimalist, and modern app icon for ${appName}. Use a softly rounded square background with a sophisticated gradient that blends ${color1} and ${color2}. Center a clean, easily recognizable symbol that represents ${appFocus}, with subtle depth via gentle shadow and light effects. If including text, weave the app name or initials in a sleek, highly legible way. The icon must remain crisp and recognizable at every size on a plain white background.`
@@ -87,7 +83,6 @@ export async function POST(req: Request) {
       sync_mode: false,
     }
 
-    // Model specific parameters
     if (selectedModel === "nano-banana") {
       input = {
         ...input,
@@ -109,7 +104,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const response = await fetch(EACHLABS_API_URL, {
+    const response = await fetch(`${EACHLABS_API_URL}/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -122,15 +117,16 @@ export async function POST(req: Request) {
       }),
     })
 
+    const prediction = await response.json().catch(() => ({}))
+
     if (!response.ok) {
-      const error = await response.json()
       if (generationId) {
         try {
           await db
             .update(logoGenerations)
             .set({
               status: "failed",
-              error: error.message || "Failed to create prediction",
+              error: prediction?.message || "Failed to create prediction",
               updatedAt: new Date(),
             })
             .where(eq(logoGenerations.id, generationId))
@@ -139,23 +135,19 @@ export async function POST(req: Request) {
         }
       }
 
-      return NextResponse.json(
-        { error: error.message || "Failed to create prediction" },
-        { status: response.status }
+      return c.json(
+        { error: prediction?.message || "Failed to create prediction" },
+        response.status
       )
     }
 
-    const prediction = await response.json()
+    const providerPredictionId = prediction?.id ?? prediction?.prediction?.id ?? generationId
+    const imagesCandidate = prediction?.output ?? prediction?.images
+    const imageList = Array.isArray(imagesCandidate)
+      ? imagesCandidate.map((item: unknown) => (typeof item === "string" ? item : JSON.stringify(item)))
+      : []
 
     if (generationId) {
-      const providerPredictionId = prediction?.id ?? prediction?.prediction?.id ?? null
-      const imagesCandidate = prediction?.output ?? prediction?.images
-      const imageList = Array.isArray(imagesCandidate)
-        ? imagesCandidate.map((item: unknown) =>
-            typeof item === "string" ? item : JSON.stringify(item)
-          )
-        : []
-
       try {
         await db
           .update(logoGenerations)
@@ -172,7 +164,7 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json(prediction)
+    return c.json({ predictionID: providerPredictionId, prediction })
   } catch (error) {
     console.error("Prediction error:", error)
 
@@ -191,9 +183,66 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
+    return c.json({ error: "Internal server error" }, 500)
   }
-}
+})
+
+predictions.get("/:id", async (c) => {
+  try {
+    const id = c.req.param("id")
+    const apiKey = process.env.EACHLABS_API_KEY
+
+    if (!apiKey) {
+      return c.json({ error: "EACHLABS_API_KEY is not set" }, 500)
+    }
+
+    const response = await fetch(`${EACHLABS_API_URL}/${id}`, {
+      method: "GET",
+      headers: {
+        "X-API-Key": apiKey,
+      },
+    })
+
+    const prediction = await response.json().catch(() => ({}))
+
+    if (response.ok && prediction) {
+      const imagesCandidate = prediction?.output ?? prediction?.images
+      const imageList = Array.isArray(imagesCandidate)
+        ? imagesCandidate.map((item: unknown) => (typeof item === "string" ? item : JSON.stringify(item)))
+        : []
+
+      const status =
+        prediction.status === "success"
+          ? "succeeded"
+          : prediction.status === "failed"
+            ? "failed"
+            : "running"
+
+      try {
+        await db
+          .update(logoGenerations)
+          .set({
+            status,
+            images: imageList,
+            providerResponse: prediction,
+            updatedAt: new Date(),
+          })
+          .where(eq(logoGenerations.providerPredictionId, id))
+      } catch (dbError) {
+        console.error("Failed to sync prediction status:", dbError)
+      }
+    }
+
+    if (!response.ok) {
+      return c.json(
+        { error: prediction?.message || "Failed to fetch prediction" },
+        response.status
+      )
+    }
+
+    return c.json(prediction)
+  } catch (error) {
+    console.error("Prediction fetch error:", error)
+    return c.json({ error: "Internal server error" }, 500)
+  }
+})

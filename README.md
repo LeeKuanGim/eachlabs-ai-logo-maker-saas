@@ -78,10 +78,14 @@
 - **Animations**: [tw-animate-css](https://www.npmjs.com/package/tw-animate-css)
 - **Theme**: [next-themes](https://github.com/pacocoursey/next-themes)
 
+### Backend/API
+- **Framework**: [Hono](https://hono.dev/) + Bun runtime (REST-first, edge friendly)
+
 ### Developer Tools
 - **Package Manager**: [Bun](https://bun.sh/) (ana paket yöneticisi)
 - **Linting**: [ESLint 9](https://eslint.org/)
 - **Build Tool**: Turbopack (Next.js dahili)
+- **Monorepo**: Turborepo + Bun workspaces
 
 ---
 
@@ -108,14 +112,15 @@ bun install
 DATABASE_URL=postgres://user:pass@host:port/db
 DATABASE_SSL=true # opsiyonel, prod için önerilir
 EACHLABS_API_KEY=your_api_key_here
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3002
 ```
 
 ### Adım 4: Geliştirme Sunucusunu Başlatın
 ```bash
-bun dev
+bun run dev
 ```
 
-Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
+Bu komut hem Next.js uygulamasını (varsayılan 3000) hem de Hono API'sini (varsayılan 3002, `PORT` ile güncellenebilir) başlatır. İstemci hangi API'ye vuracağını `NEXT_PUBLIC_API_BASE_URL` üzerinden bilir. Yalnızca web veya API'yi ayağa kaldırmak için `bun run dev -- --filter=web` veya `bun run dev -- --filter=api` komutlarını kullanın. Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
 
 ---
 
@@ -143,17 +148,27 @@ Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
 ### Komut Satırı Scriptleri
 
 ```bash
-# Geliştirme sunucusu (Turbopack ile)
-bun dev
+# Tüm uygulamalar için geliştirme
+bun run dev
 
-# Production build
+# Sadece web veya API geliştirme
+bun run dev -- --filter=web
+bun run dev -- --filter=api
+
+# Build ve lint
 bun run build
+bun run lint
 
-# Production sunucusu
-bun start
+# Production çalıştırma (web + API)
+bun run start
+bun run start -- --filter=web
+bun run start -- --filter=api
 
-# Linting
-bun lint
+# Veritabanı yardımcı komutları (API servisi için)
+bun run db:generate
+bun run db:migrate
+bun run db:push
+bun run db:studio
 ```
 
 ---
@@ -162,43 +177,43 @@ bun lint
 
 ```
 eachlabs-ai-logo-maker-saas/
-├── app/                          # Next.js App Router
-│   ├── api/                      # API routes
-│   │   └── predictions/          # Logo oluşturma API
-│   ├── globals.css               # Global stiller
-│   ├── layout.tsx                # Root layout
-│   └── page.tsx                  # Ana sayfa
-│
-├── components/                   # React bileşenleri
-│   ├── logo-maker.tsx            # Ana logo oluşturucu bileşeni
-│   └── ui/                       # Yeniden kullanılabilir UI bileşenleri
-│       ├── button.tsx
-│       ├── card.tsx
-│       ├── form.tsx
-│       ├── input.tsx
-│       ├── select.tsx
-│       └── ... (54 bileşen)
+├── apps/
+│   ├── web/                      # Next.js (App Router)
+│   │   ├── app/                  # Routes, layouts, styles
+│   │   ├── components/           # UI + landing bölümleri
+│   │   ├── hooks/                # Custom React hooks
+│   │   ├── lib/                  # Yardımcı fonksiyonlar
+│   │   ├── public/               # Statik varlıklar
+│   │   ├── next.config.ts        # Next.js yapılandırması
+│   │   └── package.json          # Web app paket tanımı
+│   └── api/                      # Hono + Bun API (DB ve Eachlabs entegrasyonu)
+│       ├── src/
+│       │   ├── db/               # Drizzle şeması & bağlantı
+│       │   ├── routes/           # Hono route'ları (örn. predictions)
+│       │   └── index.ts          # Hono entrypoint (port 3002)
+│       ├── drizzle/              # Göç çıktıları
+│       ├── drizzle.config.ts     # Drizzle CLI yapılandırması
+│       └── package.json          # API paket tanımı
 │
 ├── docs/                         # Dokümantasyon
-│   ├── prd.md                    # Ürün Gereksinimleri Dökümanı
+│   ├── prd.md                    # Ürün Gereksinimleri
 │   ├── api-registry.md           # API Referansı
-│   └── index.nextjs.md           # Next.js Kılavuzu
+│   ├── turborepo/                # Turborepo notları
+│   └── ...                       # Diğer dokümanlar
 │
-├── hooks/                        # Custom React hooks
-├── lib/                          # Yardımcı fonksiyonlar
-├── public/                       # Statik dosyalar
-│
+├── turbo.json                    # Turborepo yapılandırması
+├── tsconfig.base.json            # Paylaşılan TS ayarları
 ├── .gitignore
-├── components.json               # shadcn/ui yapılandırması
-├── next.config.ts                # Next.js yapılandırması
-├── package.json
-├── tsconfig.json                 # TypeScript yapılandırması
+├── bun.lock
+├── package.json                  # Monorepo kök script'leri
 └── README.md
 ```
 
 ---
 
 ## 🔌 API Referansı
+
+Yerel baz URL: `http://localhost:3002`
 
 ### Logo Oluşturma Endpoint
 
@@ -219,7 +234,8 @@ eachlabs-ai-logo-maker-saas/
 **Response:**
 ```typescript
 {
-  predictionID: string;  // Takip için prediction ID
+  predictionID: string;   // Takip için prediction ID
+  prediction?: unknown;   // Eachlabs yanıtı (debug için passthrough)
 }
 ```
 
@@ -230,8 +246,9 @@ eachlabs-ai-logo-maker-saas/
 **Response:**
 ```typescript
 {
-  status: "queued" | "running" | "succeeded" | "failed";
-  output?: string[];     // Oluşturulan logo URL'leri (succeeded durumunda)
+  status: "success" | "failed" | "running" | "queued";
+  output?: string[];     // Oluşturulan logo URL'leri (success durumunda)
+  [key: string]: unknown; // Eachlabs yanıtı olduğu gibi döner
 }
 ```
 
