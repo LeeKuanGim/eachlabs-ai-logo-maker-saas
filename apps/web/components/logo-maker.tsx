@@ -273,6 +273,7 @@ export function LogoMaker() {
       } else {
         setErrorType(null)
       }
+      invalidateBalance()
     },
   })
 
@@ -299,6 +300,7 @@ export function LogoMaker() {
 
     const timer = setInterval(() => {
       if (pollDeadlineRef.current && Date.now() > pollDeadlineRef.current) {
+        queryClient.cancelQueries({ queryKey: ["prediction-status", predictionId] })
         setErrorMessage("Generation timed out. Please try again.")
         setPredictionId(null)
         pollDeadlineRef.current = null
@@ -306,7 +308,7 @@ export function LogoMaker() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [predictionId])
+  }, [predictionId, queryClient])
 
   const isPolling = Boolean(predictionId) && (predictionQuery.isPending || predictionQuery.isFetching || predictionQuery.isRefetching)
   const isLoading = createPrediction.isPending || isPolling

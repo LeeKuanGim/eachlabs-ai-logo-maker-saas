@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { eq, desc, and, gt, sql } from "drizzle-orm"
+import { eq, desc, sql } from "drizzle-orm"
 
 import { db } from "../db"
 import { userCreditBalances, creditTransactions, creditPackages } from "../db/schema"
@@ -16,6 +16,8 @@ type CreditTransactionType =
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
+
+const SIGNUP_BONUS_CREDITS = Number.parseInt(process.env.SIGNUP_BONUS_CREDITS ?? "1", 10) || 1
 
 /**
  * Get the authenticated user from the request
@@ -41,12 +43,11 @@ export async function initializeUserCredits(userId: string): Promise<void> {
   }
 
   const now = new Date()
-  const signupBonus = 1
 
   await db.transaction(async (tx) => {
     await tx.insert(userCreditBalances).values({
       userId,
-      balance: signupBonus,
+      balance: SIGNUP_BONUS_CREDITS,
       totalPurchased: 0,
       totalUsed: 0,
       lastTransactionAt: now,
@@ -57,9 +58,9 @@ export async function initializeUserCredits(userId: string): Promise<void> {
     await tx.insert(creditTransactions).values({
       userId,
       type: "signup_bonus",
-      amount: signupBonus,
-      balanceAfter: signupBonus,
-      description: "Welcome bonus - 1 free credit",
+      amount: SIGNUP_BONUS_CREDITS,
+      balanceAfter: SIGNUP_BONUS_CREDITS,
+      description: `Welcome bonus - ${SIGNUP_BONUS_CREDITS} free credit${SIGNUP_BONUS_CREDITS === 1 ? "" : "s"}`,
       performedBy: "system",
       createdAt: now,
     })
@@ -156,6 +157,7 @@ export async function addCredits(
     description?: string
     performedBy?: string
     metadata?: Record<string, unknown>
+    logoGenerationId?: string
   } = {}
 ): Promise<{ success: boolean; newBalance: number }> {
   const now = new Date()
@@ -199,6 +201,7 @@ export async function addCredits(
       balanceAfter: newBalance,
       polarOrderId: options.polarOrderId,
       polarProductId: options.polarProductId,
+      logoGenerationId: options.logoGenerationId,
       description: options.description ?? `Added ${amount} credits`,
       performedBy: options.performedBy ?? "system",
       metadata: options.metadata,

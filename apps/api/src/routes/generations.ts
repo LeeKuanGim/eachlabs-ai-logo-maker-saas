@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { eq, desc, and } from "drizzle-orm"
+import { eq, desc, and, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import { db } from "../db"
@@ -68,18 +68,19 @@ generations.get("/", async (c) => {
       .offset(offset)
 
     // Get total count for pagination
-    const countResult = await db
-      .select({ count: logoGenerations.id })
+    const [countResult] = await db
+      .select({ count: sql<number>`count(*)` })
       .from(logoGenerations)
       .where(and(...conditions))
+    const total = Number(countResult?.count ?? 0)
 
     return c.json({
       generations: results,
       pagination: {
         limit,
         offset,
-        total: countResult.length,
-        hasMore: offset + results.length < countResult.length,
+        total,
+        hasMore: offset + results.length < total,
       },
     })
   } catch (error) {

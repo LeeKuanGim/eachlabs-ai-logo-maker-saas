@@ -62,6 +62,7 @@ predictions.post("/", async (c) => {
   let generationId: string | null = null
   let userId: string | null = null
   let creditDeducted = false
+  let creditsRequired = 1
 
   try {
     // Authenticate user
@@ -93,8 +94,13 @@ predictions.post("/", async (c) => {
       return c.json({ error: "Invalid model selected" }, 400)
     }
 
-    // Check credit balance (1 credit per generation, regardless of outputCount)
-    const creditsRequired = 1
+    const parsedOutputCount = Number.parseInt(`${outputCount ?? 1}`, 10)
+    const outputCountValue = Number.isFinite(parsedOutputCount)
+      ? Math.min(4, Math.max(1, parsedOutputCount))
+      : 1
+    creditsRequired = outputCountValue
+
+    // Check credit balance (1 credit per logo/output)
     const balance = await getUserBalance(userId)
     if (balance < creditsRequired) {
       return c.json(
@@ -104,11 +110,6 @@ predictions.post("/", async (c) => {
     }
 
     const prompt = `Design an iOS 16–ready, minimalist, and modern app icon for ${appName}. Use a softly rounded square background with a sophisticated gradient that blends ${color1} and ${color2}. Center a clean, easily recognizable symbol that represents ${appFocus}, with subtle depth via gentle shadow and light effects. If including text, weave the app name or initials in a sleek, highly legible way. The icon must remain crisp and recognizable at every size on a plain white background.`
-
-    const parsedOutputCount = Number.parseInt(`${outputCount ?? 1}`, 10)
-    const outputCountValue = Number.isFinite(parsedOutputCount)
-      ? Math.max(1, parsedOutputCount)
-      : 1
 
     // Create generation record with userId
     try {
@@ -213,7 +214,7 @@ predictions.post("/", async (c) => {
       // Refund credit if deducted
       if (creditDeducted && userId && generationId) {
         try {
-          await addCredits(userId, 1, "refund", {
+          await addCredits(userId, creditsRequired, "refund", {
             logoGenerationId: generationId,
             description: "Refund: provider unreachable",
           })
@@ -246,7 +247,7 @@ predictions.post("/", async (c) => {
       // Refund credit if deducted
       if (creditDeducted && userId && generationId) {
         try {
-          await addCredits(userId, 1, "refund", {
+          await addCredits(userId, creditsRequired, "refund", {
             logoGenerationId: generationId,
             description: "Refund: invalid provider response",
           })
@@ -280,7 +281,7 @@ predictions.post("/", async (c) => {
       // Refund credit if deducted
       if (creditDeducted && userId && generationId) {
         try {
-          await addCredits(userId, 1, "refund", {
+          await addCredits(userId, creditsRequired, "refund", {
             logoGenerationId: generationId,
             description: "Refund: provider error",
           })
@@ -338,13 +339,19 @@ predictions.post("/", async (c) => {
 
     const providerResponse =
       prediction && typeof prediction === "object" ? (prediction as Record<string, unknown>) : null
+    const providerStatus: ProviderStatus =
+      prediction && typeof prediction === "object" && "status" in prediction
+        ? statusMap[String((prediction as { status?: unknown }).status)] ?? "running"
+        : imageList.length > 0
+          ? "succeeded"
+          : "running"
 
     if (generationId) {
       try {
         await db
           .update(logoGenerations)
           .set({
-            status: "succeeded",
+            status: providerStatus,
             providerPredictionId,
             images: imageList,
             providerResponse,
@@ -378,7 +385,7 @@ predictions.post("/", async (c) => {
     // Refund credit if deducted
     if (creditDeducted && userId && generationId) {
       try {
-        await addCredits(userId, 1, "refund", {
+        await addCredits(userId, creditsRequired, "refund", {
           logoGenerationId: generationId,
           description: "Refund: internal error",
         })
@@ -399,6 +406,29 @@ predictions.get("/:id", async (c) => {
     }
 
     const { id } = parsedParams.data
+    const user = await getAuthUser(c.req.raw)
+
+    if (!user) {
+      return c.json({ error: "Authentication required" }, 401)
+    }
+
+    const [generation] = await db
+      .select({
+        userId: logoGenerations.userId,
+        id: logoGenerations.id,
+      })
+      .from(logoGenerations)
+      .where(eq(logoGenerations.providerPredictionId, id))
+      .limit(1)
+
+    if (!generation) {
+      return c.json({ error: "Prediction not found" }, 404)
+    }
+
+    if (generation.userId !== user.id) {
+      return c.json({ error: "Forbidden" }, 403)
+    }
+
     const apiKey = process.env.EACHLABS_API_KEY
 
     if (!apiKey) {

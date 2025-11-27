@@ -6,10 +6,12 @@ import { db } from "../db"
 import { userCreditBalances, creditTransactions } from "../db/schema"
 import { getAuthUser, addCredits, getUserBalance } from "./credits"
 
+type AdminUser = { id: string; email: string }
+
 // Simple admin check - can be expanded to use roles/permissions
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean)
 
-async function isAdmin(req: Request): Promise<{ isAdmin: boolean; user: { id: string; email: string } | null }> {
+async function isAdmin(req: Request): Promise<{ isAdmin: boolean; user: AdminUser | null }> {
   const user = await getAuthUser(req)
 
   if (!user || !user.email) {
@@ -33,7 +35,7 @@ const userIdParamSchema = z.object({
   userId: z.string().min(1),
 })
 
-export const admin = new Hono()
+export const admin = new Hono<{ Variables: { adminUser: AdminUser } }>()
 
 /**
  * Middleware to check admin access
@@ -69,7 +71,7 @@ admin.post("/credits/adjust", async (c) => {
     }
 
     const { userId, amount, type, reason } = parsed.data
-    const adminUser = c.get("adminUser") as { id: string; email: string }
+    const adminUser = c.get("adminUser")
 
     const transactionType = type === "add" ? "adjustment_add" : "adjustment_remove"
     const creditAmount = type === "add" ? amount : -amount
@@ -86,7 +88,7 @@ admin.post("/credits/adjust", async (c) => {
       }
     }
 
-    const result = await addCredits(userId, Math.abs(creditAmount), transactionType, {
+    const result = await addCredits(userId, creditAmount, transactionType, {
       description: `Admin adjustment: ${reason}`,
       performedBy: adminUser.id,
       metadata: {

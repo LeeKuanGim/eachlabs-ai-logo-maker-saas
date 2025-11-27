@@ -1,4 +1,4 @@
-import { Hono } from "hono"
+import { Hono, type Context } from "hono"
 import { eq } from "drizzle-orm"
 import crypto from "crypto"
 
@@ -107,7 +107,7 @@ webhooks.post("/polar", async (c) => {
   }
 })
 
-async function handleOrderCreated(c: ReturnType<typeof Hono.prototype.get>, event: PolarCheckoutEvent) {
+async function handleOrderCreated(c: Context, event: PolarCheckoutEvent) {
   const orderId = event.data.id
   const productId = event.data.product_id ?? event.data.product?.id
   const userId = event.data.user_id ?? event.data.metadata?.userId as string | undefined
@@ -196,33 +196,31 @@ async function handleOrderCreated(c: ReturnType<typeof Hono.prototype.get>, even
   })
 }
 
-/**
- * POST /api/webhooks/polar/test
- * Test endpoint for manual credit addition (development only)
- */
-webhooks.post("/polar/test", async (c) => {
-  if (process.env.NODE_ENV === "production") {
-    return c.json({ error: "Not available in production" }, 403)
-  }
+if (process.env.NODE_ENV !== "production") {
+  /**
+   * POST /api/webhooks/polar/test
+   * Test endpoint for manual credit addition (development only)
+   */
+  webhooks.post("/polar/test", async (c) => {
+    try {
+      const { userId, credits, description } = await c.req.json()
 
-  try {
-    const { userId, credits, description } = await c.req.json()
+      if (!userId || !credits) {
+        return c.json({ error: "userId and credits required" }, 400)
+      }
 
-    if (!userId || !credits) {
-      return c.json({ error: "userId and credits required" }, 400)
+      const result = await addCredits(userId, credits, "adjustment_add", {
+        description: description ?? `Test credit addition`,
+        performedBy: "test_endpoint",
+      })
+
+      return c.json({
+        success: result.success,
+        newBalance: result.newBalance,
+      })
+    } catch (error) {
+      console.error("Test webhook error:", error)
+      return c.json({ error: "Failed to add credits" }, 500)
     }
-
-    const result = await addCredits(userId, credits, "adjustment_add", {
-      description: description ?? `Test credit addition`,
-      performedBy: "test_endpoint",
-    })
-
-    return c.json({
-      success: result.success,
-      newBalance: result.newBalance,
-    })
-  } catch (error) {
-    console.error("Test webhook error:", error)
-    return c.json({ error: "Failed to add credits" }, 500)
-  }
-})
+  })
+}
