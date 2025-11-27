@@ -18,7 +18,7 @@ A **SaaS AI-powered logo generation application** that allows users to create pr
 - Multi-model AI logo generation (3 models: Nano Banana, Seedream v4, Reve Text)
 - Real-time generation status tracking with polling
 - Color-based logo generation with gradient support
-- Batch image generation (up to 4 images at once)
+- Batch image generation (up to 4 images at once; 1 credit per output)
 - Download functionality for generated logos
 - Database persistence of generation history
 
@@ -49,6 +49,7 @@ A **SaaS AI-powered logo generation application** that allows users to create pr
 
 #### POST /api/predictions
 **Purpose**: Create a new logo generation prediction
+**Auth**: Required (Better Auth session); charges `outputCount` credits (1 per logo output, max 4 per request).
 
 **Request**:
 ```typescript
@@ -82,6 +83,7 @@ A **SaaS AI-powered logo generation application** that allows users to create pr
 
 #### GET /api/predictions/{id}
 **Purpose**: Retrieve prediction status and results
+**Auth**: Required; must be the owner of the generation.
 
 **Path Parameters**:
 - `id`: Prediction ID from creation endpoint
@@ -97,6 +99,8 @@ A **SaaS AI-powered logo generation application** that allows users to create pr
 
 **Error Responses**:
 - 400: Invalid prediction id
+- 401: Authentication required
+- 403: Forbidden (prediction does not belong to user)
 - 500: EACHLABS_API_KEY not configured
 - 502: Failed to reach provider
 

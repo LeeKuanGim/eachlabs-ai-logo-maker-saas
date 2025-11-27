@@ -45,7 +45,7 @@
   - Nano Banana
   - Seedream v4
   - Reve Text
-- **Özelleştirilebilir Çıktı**: 1-4 adet logo aynı anda oluşturabilme
+- **Kredi Tabanlı**: Her logo çıktısı 1 kredi; 1-4 adet logo tek seferde oluşturulabilir
 - **Renk Önizleme**: Seçtiğiniz renkleri anlık görüntüleme
 
 ### 🖼️ Kullanıcı Deneyimi
@@ -54,6 +54,7 @@
 - **Responsive Tasarım**: Mobil ve masaüstü uyumlu
 - **Dark/Light Mode**: Otomatik tema desteği
 - **Kolay İndirme**: Tek tıkla logo indirme
+- **Kredi Sistemi**: İlk girişte ücretsiz kredi, ardından paketlerle kredi satın alma
 
 ### 🛠️ Teknik Özellikler
 - **Form Validasyonu**: Zod ile güçlü tip güvenliği
@@ -120,6 +121,8 @@ ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3002
 PGPOOL_MAX=50
 PGPOOL_IDLE_MS=30000
 PGPOOL_CONN_TIMEOUT_MS=5000
+SIGNUP_BONUS_CREDITS=1
+ADMIN_EMAILS=admin@example.com
 ```
 
 ### Adım 4: Geliştirme Sunucusunu Başlatın
