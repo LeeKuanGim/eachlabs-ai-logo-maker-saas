@@ -5,6 +5,7 @@ import type { StatusCode } from "hono/utils/http-status"
 
 import { db } from "../db"
 import { logoGenerations } from "../db/schema"
+import { getAuthUser, getUserBalance, deductCredits, addCredits } from "./credits"
 
 const EACHLABS_API_URL = "https://api.eachlabs.ai/v1/prediction"
 
@@ -59,8 +60,17 @@ export const predictions = new Hono()
 
 predictions.post("/", async (c) => {
   let generationId: string | null = null
+  let userId: string | null = null
+  let creditDeducted = false
 
   try {
+    // Authenticate user
+    const user = await getAuthUser(c.req.raw)
+    if (!user) {
+      return c.json({ error: "Authentication required" }, 401)
+    }
+    userId = user.id
+
     const body = await c.req.json()
     const parsedBody = requestSchema.safeParse(body)
 
@@ -83,6 +93,16 @@ predictions.post("/", async (c) => {
       return c.json({ error: "Invalid model selected" }, 400)
     }
 
+    // Check credit balance (1 credit per generation, regardless of outputCount)
+    const creditsRequired = 1
+    const balance = await getUserBalance(userId)
+    if (balance < creditsRequired) {
+      return c.json(
+        { error: "Insufficient credits", balance, required: creditsRequired },
+        402
+      )
+    }
+
     const prompt = `Design an iOS 16–ready, minimalist, and modern app icon for ${appName}. Use a softly rounded square background with a sophisticated gradient that blends ${color1} and ${color2}. Center a clean, easily recognizable symbol that represents ${appFocus}, with subtle depth via gentle shadow and light effects. If including text, weave the app name or initials in a sleek, highly legible way. The icon must remain crisp and recognizable at every size on a plain white background.`
 
     const parsedOutputCount = Number.parseInt(`${outputCount ?? 1}`, 10)
@@ -90,16 +110,19 @@ predictions.post("/", async (c) => {
       ? Math.max(1, parsedOutputCount)
       : 1
 
+    // Create generation record with userId
     try {
       const [record] = await db
         .insert(logoGenerations)
         .values({
+          userId,
           appName,
           appFocus,
           color1,
           color2,
           model: selectedModel,
           outputCount: outputCountValue,
+          creditsCharged: creditsRequired,
           prompt,
           status: "running",
         })
@@ -108,6 +131,24 @@ predictions.post("/", async (c) => {
       generationId = record?.id ?? null
     } catch (error) {
       console.error("Failed to persist generation request:", error)
+    }
+
+    // Deduct credit upfront (before calling provider)
+    if (generationId) {
+      const deductResult = await deductCredits(
+        userId,
+        creditsRequired,
+        generationId,
+        `Logo generation: ${appName}`
+      )
+      if (!deductResult.success) {
+        // Race condition - balance changed between check and deduct
+        return c.json(
+          { error: "Insufficient credits", balance: deductResult.newBalance, required: creditsRequired },
+          402
+        )
+      }
+      creditDeducted = true
     }
 
     let input: Record<string, unknown> = {
@@ -169,6 +210,18 @@ predictions.post("/", async (c) => {
         }
       }
 
+      // Refund credit if deducted
+      if (creditDeducted && userId && generationId) {
+        try {
+          await addCredits(userId, 1, "refund", {
+            logoGenerationId: generationId,
+            description: "Refund: provider unreachable",
+          })
+        } catch (refundError) {
+          console.error("Failed to refund credit:", refundError)
+        }
+      }
+
       return c.json({ error: "Failed to reach provider" }, 502)
     }
 
@@ -187,6 +240,18 @@ predictions.post("/", async (c) => {
             .where(eq(logoGenerations.id, generationId))
         } catch (dbError) {
           console.error("Failed to update generation status:", dbError)
+        }
+      }
+
+      // Refund credit if deducted
+      if (creditDeducted && userId && generationId) {
+        try {
+          await addCredits(userId, 1, "refund", {
+            logoGenerationId: generationId,
+            description: "Refund: invalid provider response",
+          })
+        } catch (refundError) {
+          console.error("Failed to refund credit:", refundError)
         }
       }
 
@@ -209,6 +274,18 @@ predictions.post("/", async (c) => {
             .where(eq(logoGenerations.id, generationId))
         } catch (dbError) {
           console.error("Failed to update generation status:", dbError)
+        }
+      }
+
+      // Refund credit if deducted
+      if (creditDeducted && userId && generationId) {
+        try {
+          await addCredits(userId, 1, "refund", {
+            logoGenerationId: generationId,
+            description: "Refund: provider error",
+          })
+        } catch (refundError) {
+          console.error("Failed to refund credit:", refundError)
         }
       }
 
@@ -295,6 +372,18 @@ predictions.post("/", async (c) => {
           .where(eq(logoGenerations.id, generationId))
       } catch (dbError) {
         console.error("Failed to update generation status:", dbError)
+      }
+    }
+
+    // Refund credit if deducted
+    if (creditDeducted && userId && generationId) {
+      try {
+        await addCredits(userId, 1, "refund", {
+          logoGenerationId: generationId,
+          description: "Refund: internal error",
+        })
+      } catch (refundError) {
+        console.error("Failed to refund credit:", refundError)
       }
     }
 

@@ -4,6 +4,11 @@ import { cors } from "hono/cors"
 
 import { auth } from "./auth"
 import { predictions } from "./routes/predictions"
+import { credits } from "./routes/credits"
+import { webhooks } from "./routes/webhooks"
+import { generations } from "./routes/generations"
+import { admin } from "./routes/admin"
+import { strictRateLimit, moderateRateLimit } from "./middleware/rate-limit"
 
 const app = new Hono()
 
@@ -18,7 +23,7 @@ app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
-    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "X-API-Key", "Authorization"],
   })
 )
@@ -27,7 +32,25 @@ app.get("/", (c) => c.text("API is running"))
 app.get("/health", (c) => c.json({ status: "ok" }))
 
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw))
+
+// Apply strict rate limiting to predictions (10/min)
+app.use("/api/predictions/*", strictRateLimit)
 app.route("/api/predictions", predictions)
+
+// Apply moderate rate limiting to credits (30/min)
+app.use("/api/credits/*", moderateRateLimit)
+app.route("/api/credits", credits)
+
+// No rate limiting on webhooks (they come from Polar.sh)
+app.route("/api/webhooks", webhooks)
+
+// User generations history
+app.use("/api/generations/*", moderateRateLimit)
+app.route("/api/generations", generations)
+
+// Admin routes (rate limited)
+app.use("/api/admin/*", moderateRateLimit)
+app.route("/api/admin", admin)
 
 const port = Number(process.env.PORT ?? 3002)
 
