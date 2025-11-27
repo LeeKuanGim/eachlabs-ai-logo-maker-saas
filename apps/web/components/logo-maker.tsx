@@ -6,9 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import Image from "next/image"
-import { Loader2, Wand2, Download, FileText, Image as ImageIcon } from "lucide-react"
+import Link from "next/link"
+import { Loader2, Wand2, Download, FileText, Image as ImageIcon, Coins, AlertTriangle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { useCredits, useInvalidateCredits } from "@/hooks/use-credits"
 import {
   Card,
   CardContent,
@@ -152,14 +154,37 @@ const readErrorMessage = (payload: PredictionPayload | null, fallback: string) =
   return fallback
 }
 
-async function createPredictionRequest(values: LogoFormValues) {
+async function createPredictionRequest(values: LogoFormValues): Promise<string> {
   const response = await fetch(`${API_BASE_URL}/api/predictions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(values),
   })
 
-  const data = (await response.json().catch(() => null)) as { predictionID?: unknown; error?: unknown } | null
+  const data = (await response.json().catch(() => null)) as {
+    predictionID?: unknown
+    error?: unknown
+    balance?: number
+  } | null
+
+  // Handle specific error cases
+  if (response.status === 401) {
+    const error = new Error("Please sign in to generate logos") as Error & { errorType: string }
+    error.errorType = "auth_required"
+    throw error
+  }
+
+  if (response.status === 402) {
+    const error = new Error(
+      data?.balance === 0
+        ? "You have no credits left. Purchase more to continue."
+        : "Insufficient credits for this generation."
+    ) as Error & { errorType: string; balance: number }
+    error.errorType = "insufficient_credits"
+    error.balance = data?.balance ?? 0
+    throw error
+  }
 
   if (!response.ok || !data) {
     throw new Error(readErrorMessage(data, "Failed to start logo generation"))
@@ -176,7 +201,9 @@ async function createPredictionRequest(values: LogoFormValues) {
 
 async function fetchPredictionStatus(predictionId: string): Promise<NormalizedPrediction> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/predictions/${predictionId}`)
+    const response = await fetch(`${API_BASE_URL}/api/predictions/${predictionId}`, {
+      credentials: "include",
+    })
     const data = (await response.json().catch(() => null)) as PredictionPayload | null
 
     if (!response.ok || !data) {
@@ -208,7 +235,13 @@ export function LogoMaker() {
   const [generationCount, setGenerationCount] = useState<number>(parseOutputCount(defaultValues.outputCount))
   const [predictionId, setPredictionId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [errorType, setErrorType] = useState<"auth_required" | "insufficient_credits" | null>(null)
   const pollDeadlineRef = useRef<number | null>(null)
+
+  // Credit balance hooks
+  const { data: creditsData, isLoading: isCreditsLoading } = useCredits()
+  const { invalidateBalance } = useInvalidateCredits()
+  const creditBalance = creditsData?.balance ?? 0
 
   const form = useForm<LogoFormValues>({
     resolver: zodResolver(formSchema),
@@ -219,6 +252,7 @@ export function LogoMaker() {
     mutationFn: createPredictionRequest,
     onMutate: (values) => {
       setErrorMessage(null)
+      setErrorType(null)
       setGenerationCount(parseOutputCount(values.outputCount))
       pollDeadlineRef.current = null
       setPredictionId(null)
@@ -228,9 +262,17 @@ export function LogoMaker() {
       setPredictionId(id)
       setGenerationCount(parseOutputCount(values.outputCount))
       pollDeadlineRef.current = Date.now() + MAX_POLL_DURATION_MS
+      // Invalidate credits after starting generation (credit was deducted)
+      invalidateBalance()
     },
     onError: (error) => {
-      setErrorMessage(error instanceof Error ? error.message : "Failed to start logo generation")
+      const err = error as Error & { errorType?: string }
+      setErrorMessage(err.message ?? "Failed to start logo generation")
+      if (err.errorType === "auth_required" || err.errorType === "insufficient_credits") {
+        setErrorType(err.errorType)
+      } else {
+        setErrorType(null)
+      }
     },
   })
 
@@ -284,10 +326,41 @@ export function LogoMaker() {
     <div className="w-full max-w-3xl mx-auto p-4">
       <Card className="shadow-xl border-0">
         <CardHeader className="space-y-1 pb-8">
-          <CardTitle className="text-xl font-bold">AI Logo Maker</CardTitle>
-          <CardDescription>
-            Quickly design a modern, app-store-ready logo.
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="text-xl font-bold">AI Logo Maker</CardTitle>
+              <CardDescription>
+                Quickly design a modern, app-store-ready logo.
+              </CardDescription>
+            </div>
+            {/* Credit Balance Display */}
+            <div className="flex items-center gap-2">
+              {isCreditsLoading ? (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Loading...</span>
+                </div>
+              ) : (
+                <div
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
+                    creditBalance === 0
+                      ? "bg-destructive/10 text-destructive"
+                      : creditBalance <= 2
+                        ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
+                        : "bg-primary/10 text-primary"
+                  }`}
+                >
+                  <Coins className="h-4 w-4" />
+                  <span>{creditBalance} credit{creditBalance !== 1 ? "s" : ""}</span>
+                </div>
+              )}
+              {creditBalance <= 2 && !isCreditsLoading && (
+                <Button variant={creditBalance === 0 ? "default" : "outline"} size="sm" asChild>
+                  <Link href="/pricing">{creditBalance === 0 ? "Buy Credits" : "Get More"}</Link>
+                </Button>
+              )}
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -452,8 +525,23 @@ export function LogoMaker() {
                 )}
               </RainbowButton>
               {combinedError && !isLoading && (
-                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {combinedError}
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 space-y-2">
+                      <p className="text-sm text-destructive font-medium">{combinedError}</p>
+                      {errorType === "auth_required" && (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/login">Sign In</Link>
+                        </Button>
+                      )}
+                      {errorType === "insufficient_credits" && (
+                        <Button size="sm" asChild>
+                          <Link href="/pricing">Buy Credits</Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </form>
