@@ -18,7 +18,10 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  const [mounted, setMounted] = useState(false)
+
   useEffect(() => {
+    setMounted(true)
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
     }
@@ -71,7 +74,7 @@ export function Header() {
           {/* Right side */}
           <div className="flex items-center gap-2">
             {/* Theme toggle */}
-            {resolvedTheme ? (
+            {mounted && resolvedTheme ? (
               <Button
                 variant="ghost"
                 size="icon"
