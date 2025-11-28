@@ -78,10 +78,10 @@ function FeatureCard({ feature, index, isVisible }: FeatureCardProps) {
       <motion.div
         className={cn(
           "relative p-6 md:p-8 rounded-2xl h-full",
-          "bg-white/[0.02] dark:bg-white/[0.02]",
-          "border border-white/[0.05]",
+          "bg-foreground/[0.02] dark:bg-white/[0.02]",
+          "border border-foreground/[0.05]",
           "transition-colors duration-300",
-          isHovered && "bg-white/[0.04] border-white/[0.1]"
+          isHovered && "bg-foreground/[0.04] border-foreground/[0.1]"
         )}
         animate={{
           rotateX: isHovered ? mousePosition.y * -8 : 0,

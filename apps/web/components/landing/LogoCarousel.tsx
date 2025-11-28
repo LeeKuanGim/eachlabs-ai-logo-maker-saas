@@ -61,11 +61,11 @@ const LogoCard = memo(function LogoCard({ logo }: LogoCardProps) {
       <div
         className={cn(
           "w-full h-full rounded-2xl",
-          "bg-white/[0.03]",
-          "border border-white/[0.08]",
+          "bg-foreground/[0.03]",
+          "border border-foreground/[0.08]",
           "flex items-center justify-center",
           "transition-colors duration-200",
-          isHovered && "bg-white/[0.06] border-white/[0.15]"
+          isHovered && "bg-foreground/[0.06] border-foreground/[0.15]"
         )}
         style={{
           transform: `rotateX(${isHovered ? transform.rotateX : 0}deg) rotateY(${isHovered ? transform.rotateY : 0}deg) scale(${isHovered ? 1.02 : 1})`,
@@ -96,7 +96,7 @@ const LogoCard = memo(function LogoCard({ logo }: LogoCardProps) {
         {/* Subtle shine effect on hover */}
         {isHovered && (
           <div
-            className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent"
+            className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-foreground/[0.03] to-transparent"
           />
         )}
       </div>

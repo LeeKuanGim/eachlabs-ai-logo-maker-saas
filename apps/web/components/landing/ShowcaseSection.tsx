@@ -54,10 +54,10 @@ function ShowcaseCard({ logo, index, isVisible }: ShowcaseCardProps) {
       <motion.div
         className={cn(
           "w-full h-full rounded-2xl relative overflow-hidden",
-          "bg-white/[0.02]",
-          "border border-white/[0.05]",
+          "bg-foreground/[0.02]",
+          "border border-foreground/[0.05]",
           "transition-colors duration-300",
-          isHovered && "bg-white/[0.04] border-white/[0.1]"
+          isHovered && "bg-foreground/[0.04] border-foreground/[0.1]"
         )}
         animate={{
           rotateX: isHovered ? mousePosition.y * -10 : 0,
@@ -101,7 +101,7 @@ function ShowcaseCard({ logo, index, isVisible }: ShowcaseCardProps) {
         <div
           className={cn(
             "absolute inset-0 opacity-0 transition-opacity duration-500",
-            "bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent",
+            "bg-gradient-to-tr from-transparent via-foreground/[0.02] to-transparent",
             isHovered && "opacity-100"
           )}
         />
@@ -109,11 +109,11 @@ function ShowcaseCard({ logo, index, isVisible }: ShowcaseCardProps) {
 
       {/* Label on hover */}
       <motion.div
-        className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap"
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap"
         initial={{ opacity: 0, y: -5 }}
         animate={{
           opacity: isHovered ? 1 : 0,
-          y: isHovered ? 8 : -5,
+          y: isHovered ? 0 : -5,
         }}
         transition={{ duration: 0.2 }}
       >
