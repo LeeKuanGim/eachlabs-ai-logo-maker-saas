@@ -108,6 +108,10 @@ cd eachlabs-ai-logo-maker-saas
 bun install
 ```
 
+```bash
+docker run --name altu-postgres -p 1453:5432 -e POSTGRES_PASSWORD=123alper123 -d postgres:16.9-alpine3.22
+```
+
 ### Adım 3: Ortam Değişkenlerini Ayarlayın
 `.env.local` dosyası oluşturun ve gerekli değişkenleri ekleyin:
 ```bash
