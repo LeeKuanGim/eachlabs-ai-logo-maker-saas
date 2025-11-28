@@ -11,6 +11,7 @@ const navLinks = [
   { href: "#features", label: "Features" },
   { href: "#showcase", label: "Showcase" },
   { href: "#how-it-works", label: "How It Works" },
+  { href: "/history", label: "History" },
 ]
 
 export function Header() {

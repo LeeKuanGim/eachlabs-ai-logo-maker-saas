@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { eq } from "drizzle-orm"
+import { eq, desc } from "drizzle-orm"
 import { z } from "zod"
 import type { StatusCode } from "hono/utils/http-status"
 
@@ -55,8 +55,39 @@ const requestSchema = z.object({
   outputCount: z.union([z.string(), z.number()]).optional(),
 })
 const paramsSchema = z.object({ id: z.string().min(1) })
-
 export const predictions = new Hono()
+
+predictions.get("/", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.raw)
+
+    let history;
+
+    if (user) {
+      history = await db
+        .select()
+        .from(logoGenerations)
+        .where(eq(logoGenerations.userId, user.id))
+        .orderBy(desc(logoGenerations.createdAt))
+        .limit(50)
+    } else {
+      history = await db
+        .select()
+        .from(logoGenerations)
+        .orderBy(desc(logoGenerations.createdAt))
+        .limit(50)
+    }
+
+    return c.json({ history })
+  } catch (error) {
+    console.error("History fetch error:", error)
+    return c.json({
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    }, 500)
+  }
+})
 
 predictions.post("/", async (c) => {
   let generationId: string | null = null
@@ -303,9 +334,9 @@ predictions.post("/", async (c) => {
     const providerPredictionId = (() => {
       const fromRoot =
         prediction &&
-        typeof prediction === "object" &&
-        "id" in prediction &&
-        typeof (prediction as { id?: unknown }).id === "string"
+          typeof prediction === "object" &&
+          "id" in prediction &&
+          typeof (prediction as { id?: unknown }).id === "string"
           ? (prediction as { id?: string }).id
           : null
 
@@ -313,11 +344,11 @@ predictions.post("/", async (c) => {
 
       const nested =
         prediction &&
-        typeof prediction === "object" &&
-        "prediction" in prediction &&
-        (prediction as { prediction?: unknown }).prediction &&
-        typeof (prediction as { prediction?: unknown }).prediction === "object" &&
-        typeof (prediction as { prediction?: { id?: unknown } }).prediction?.id === "string"
+          typeof prediction === "object" &&
+          "prediction" in prediction &&
+          (prediction as { prediction?: unknown }).prediction &&
+          typeof (prediction as { prediction?: unknown }).prediction === "object" &&
+          typeof (prediction as { prediction?: { id?: unknown } }).prediction?.id === "string"
           ? ((prediction as { prediction?: { id?: string } }).prediction?.id as string)
           : null
 
