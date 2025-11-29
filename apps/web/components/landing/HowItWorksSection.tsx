@@ -71,7 +71,7 @@ function StepCard({ step, index, isVisible, isActive, onClick }: StepCardProps) 
           "transition-all duration-300",
           isActive
             ? "bg-primary text-primary-foreground scale-110"
-            : "bg-white/[0.05] border border-white/[0.1] text-muted-foreground"
+            : "bg-foreground/[0.05] border border-foreground/[0.1] text-muted-foreground"
         )}
       >
         {step.number}
@@ -80,10 +80,10 @@ function StepCard({ step, index, isVisible, isActive, onClick }: StepCardProps) 
       <motion.div
         className={cn(
           "relative p-6 md:p-8 rounded-2xl h-full",
-          "bg-white/[0.02]",
+          "bg-foreground/[0.02]",
           "border transition-colors duration-300",
-          isActive ? "border-primary/30 bg-white/[0.04]" : "border-white/[0.05]",
-          isHovered && !isActive && "bg-white/[0.03] border-white/[0.08]"
+          isActive ? "border-primary/30 bg-foreground/[0.04]" : "border-foreground/[0.05]",
+          isHovered && !isActive && "bg-foreground/[0.03] border-foreground/[0.08]"
         )}
         animate={{
           rotateX: isHovered ? mousePosition.y * -6 : 0,
