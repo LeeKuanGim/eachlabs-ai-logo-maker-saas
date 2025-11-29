@@ -301,6 +301,7 @@ credits.get("/packages", async (c) => {
         name: creditPackages.name,
         credits: creditPackages.credits,
         priceInCents: creditPackages.priceInCents,
+        polarProductId: creditPackages.polarProductId,
         metadata: creditPackages.metadata,
       })
       .from(creditPackages)

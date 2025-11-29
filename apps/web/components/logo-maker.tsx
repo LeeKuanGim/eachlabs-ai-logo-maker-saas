@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { RainbowButton } from "@/components/ui/rainbow-button"
+import { BuyCreditsButton } from "@/components/buy-credits-button"
 
 const POLL_INTERVAL_MS = 2000
 
@@ -538,9 +539,7 @@ export function LogoMaker() {
                         </Button>
                       )}
                       {errorType === "insufficient_credits" && (
-                        <Button size="sm" asChild>
-                          <Link href="/pricing">Buy Credits</Link>
-                        </Button>
+                        <BuyCreditsButton size="sm" variant="outline" />
                       )}
                     </div>
                   </div>

@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { BuyCreditsButton } from "@/components/buy-credits-button"
 
 interface CreditBalanceProps {
   variant?: "default" | "compact" | "detailed"
@@ -111,9 +112,7 @@ export function CreditBalance({
             </div>
           </div>
           {showBuyButton && (
-            <Button size="sm" asChild>
-              <Link href="/pricing">Buy Credits</Link>
-            </Button>
+            <BuyCreditsButton size="sm" variant="default" />
           )}
         </div>
         <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
@@ -147,11 +146,11 @@ export function CreditBalance({
         <span>{balance} credit{balance !== 1 ? "s" : ""}</span>
       </div>
       {showBuyButton && (isEmpty || isLow) && (
-        <Button variant={isEmpty ? "default" : "outline"} size="sm" asChild>
-          <Link href="/pricing">
-            {isEmpty ? "Buy Credits" : "Get More"}
-          </Link>
-        </Button>
+        <BuyCreditsButton
+          variant={isEmpty ? "default" : "outline"}
+          size="sm"
+          label={isEmpty ? "Buy Credits" : "Get More"}
+        />
       )}
     </div>
   )

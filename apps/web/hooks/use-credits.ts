@@ -24,6 +24,7 @@ export interface CreditPackage {
   name: string
   credits: number
   priceInCents: number
+  polarProductId?: string | null
   metadata: {
     description?: string
     popular?: boolean
