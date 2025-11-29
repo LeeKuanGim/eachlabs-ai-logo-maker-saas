@@ -13,7 +13,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "bun run src/db/seed.ts"
+    "db:seed": "bun run src/db/seed.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@polar-sh/better-auth": "^1.5.0",
@@ -30,6 +31,7 @@
     "bun-types": "1.2.22",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.7",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.14"
   }
 }
