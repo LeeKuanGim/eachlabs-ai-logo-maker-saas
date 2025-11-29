@@ -69,6 +69,9 @@ export default function HistoryPage() {
     }
 
     if (error) {
+        const status = (error as { status?: number })?.status
+        const isUnauthorized = status === 401
+
         return (
             <div className="min-h-screen bg-background">
                 <Header />
@@ -77,13 +80,21 @@ export default function HistoryPage() {
                         <AlertCircle className="h-8 w-8 text-destructive" />
                     </div>
                     <div className="space-y-2">
-                        <h3 className="text-lg font-semibold">Failed to load history</h3>
+                        <h3 className="text-lg font-semibold">
+                            {isUnauthorized ? "Sign in to view history" : "Failed to load history"}
+                        </h3>
                         <p className="text-muted-foreground max-w-sm">
                             {error instanceof Error ? error.message : "An unexpected error occurred"}
                         </p>
-                        <Button asChild className="mt-4">
-                            <Link href="/login">Sign In</Link>
-                        </Button>
+                        {isUnauthorized ? (
+                            <Button asChild className="mt-4">
+                                <Link href="/login">Sign In</Link>
+                            </Button>
+                        ) : (
+                            <Button className="mt-4" onClick={() => window.location.reload()}>
+                                Retry
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>

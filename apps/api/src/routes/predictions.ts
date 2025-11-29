@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { eq, desc } from "drizzle-orm"
+import { eq, desc, and, gte } from "drizzle-orm"
 import { z } from "zod"
 import type { StatusCode } from "hono/utils/http-status"
 
@@ -61,24 +61,35 @@ predictions.get("/", async (c) => {
   try {
     const user = await getAuthUser(c.req.raw)
 
-    let history;
-
-    if (user) {
-      history = await db
-        .select()
-        .from(logoGenerations)
-        .where(eq(logoGenerations.userId, user.id))
-        .orderBy(desc(logoGenerations.createdAt))
-        .limit(50)
-    } else {
-      history = await db
-        .select()
-        .from(logoGenerations)
-        .orderBy(desc(logoGenerations.createdAt))
-        .limit(50)
+    if (!user) {
+      return c.json({ error: "Authentication required" }, 401)
     }
 
-    return c.json({ history })
+    const limitParam = Number.parseInt(c.req.query("limit") ?? "50", 10)
+    const offsetParam = Number.parseInt(c.req.query("offset") ?? "0", 10)
+    const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 100) : 50
+    const offset = Number.isFinite(offsetParam) && offsetParam > 0 ? offsetParam : 0
+
+    const retentionDays = Number.parseInt(process.env.GENERATION_RETENTION_DAYS ?? "365", 10)
+    const retentionDaysValue = Number.isFinite(retentionDays) ? retentionDays : 365
+    const retentionStart = new Date(
+      Date.now() - Math.max(1, retentionDaysValue) * 24 * 60 * 60 * 1000
+    )
+
+    const history = await db
+      .select()
+      .from(logoGenerations)
+      .where(
+        and(
+          eq(logoGenerations.userId, user.id),
+          gte(logoGenerations.createdAt, retentionStart)
+        )
+      )
+      .orderBy(desc(logoGenerations.createdAt))
+      .limit(limit)
+      .offset(offset)
+
+    return c.json({ history, pagination: { limit, offset } })
   } catch (error) {
     console.error("History fetch error:", error)
     return c.json({

@@ -1,5 +1,6 @@
 import { jsonb, pgEnum, pgTable, text, timestamp, uuid, varchar, integer, index } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
+import { user } from "./auth"
 
 // ============================================================================
 // ENUMS
@@ -20,7 +21,7 @@ export const logoGenerations = pgTable(
   "logo_generations",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: text("user_id"),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     appName: text("app_name").notNull(),
     appFocus: text("app_focus").notNull(),
     color1: varchar("color1", { length: 64 }).notNull(),
