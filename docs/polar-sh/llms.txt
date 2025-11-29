@@ -1,0 +1,505 @@
+# Polar
+
+## Docs
+
+- [Create Benefit](https://polar.sh/docs/api-reference/benefits/create.md): Create a benefit.
+
+**Scopes**: `benefits:write`
+- [Delete Benefit](https://polar.sh/docs/api-reference/benefits/delete.md): Delete a benefit.
+
+> [!WARNING]
+> Every grants associated with the benefit will be revoked.
+> Users will lose access to the benefit.
+
+**Scopes**: `benefits:write`
+- [Get Benefit](https://polar.sh/docs/api-reference/benefits/get.md): Get a benefit by ID.
+
+**Scopes**: `benefits:read` `benefits:write`
+- [List Benefits](https://polar.sh/docs/api-reference/benefits/list.md): List benefits.
+
+**Scopes**: `benefits:read` `benefits:write`
+- [List Benefit Grants](https://polar.sh/docs/api-reference/benefits/list-grants.md): List the individual grants for a benefit.
+
+It's especially useful to check if a user has been granted a benefit.
+
+**Scopes**: `benefits:read` `benefits:write`
+- [Update Benefit](https://polar.sh/docs/api-reference/benefits/update.md): Update a benefit.
+
+**Scopes**: `benefits:write`
+- [Create Checkout Link](https://polar.sh/docs/api-reference/checkout-links/create.md): Create a checkout link.
+
+**Scopes**: `checkout_links:write`
+- [Delete Checkout Link](https://polar.sh/docs/api-reference/checkout-links/delete.md): Delete a checkout link.
+
+**Scopes**: `checkout_links:write`
+- [Get Checkout Link](https://polar.sh/docs/api-reference/checkout-links/get.md): Get a checkout link by ID.
+
+**Scopes**: `checkout_links:read` `checkout_links:write`
+- [List Checkout Links](https://polar.sh/docs/api-reference/checkout-links/list.md): List checkout links.
+
+**Scopes**: `checkout_links:read` `checkout_links:write`
+- [Update Checkout Link](https://polar.sh/docs/api-reference/checkout-links/update.md): Update a checkout link.
+
+**Scopes**: `checkout_links:write`
+- [Confirm Checkout Session from Client](https://polar.sh/docs/api-reference/checkouts/confirm-session-from-client.md): Confirm a checkout session by client secret.
+
+Orders and subscriptions will be processed.
+- [Create Checkout Session](https://polar.sh/docs/api-reference/checkouts/create-session.md): Create a checkout session.
+
+**Scopes**: `checkouts:write`
+- [Get Checkout Session](https://polar.sh/docs/api-reference/checkouts/get-session.md): Get a checkout session by ID.
+
+**Scopes**: `checkouts:read` `checkouts:write`
+- [Get Checkout Session from Client](https://polar.sh/docs/api-reference/checkouts/get-session-from-client.md): Get a checkout session by client secret.
+- [List Checkout Sessions](https://polar.sh/docs/api-reference/checkouts/list-sessions.md): List checkout sessions.
+
+**Scopes**: `checkouts:read` `checkouts:write`
+- [Update Checkout Session](https://polar.sh/docs/api-reference/checkouts/update-session.md): Update a checkout session.
+
+**Scopes**: `checkouts:write`
+- [Update Checkout Session from Client](https://polar.sh/docs/api-reference/checkouts/update-session-from-client.md): Update a checkout session by client secret.
+- [Create Custom Field](https://polar.sh/docs/api-reference/custom-fields/create.md): Create a custom field.
+
+**Scopes**: `custom_fields:write`
+- [Delete Custom Field](https://polar.sh/docs/api-reference/custom-fields/delete.md): Delete a custom field.
+
+**Scopes**: `custom_fields:write`
+- [Get Custom Field](https://polar.sh/docs/api-reference/custom-fields/get.md): Get a custom field by ID.
+
+**Scopes**: `custom_fields:read` `custom_fields:write`
+- [List Custom Fields](https://polar.sh/docs/api-reference/custom-fields/list.md): List custom fields.
+
+**Scopes**: `custom_fields:read` `custom_fields:write`
+- [Update Custom Field](https://polar.sh/docs/api-reference/custom-fields/update.md): Update a custom field.
+
+**Scopes**: `custom_fields:write`
+- [Get Customer Meter](https://polar.sh/docs/api-reference/customer-meters/get.md): Get a customer meter by ID.
+
+**Scopes**: `customer_meters:read`
+- [List Customer Meters](https://polar.sh/docs/api-reference/customer-meters/list.md): List customer meters.
+
+**Scopes**: `customer_meters:read`
+- [null](https://polar.sh/docs/api-reference/customer-portal/downloadables/get.md)
+- [List Downloadables](https://polar.sh/docs/api-reference/customer-portal/downloadables/list.md): **Scopes**: `customer_portal:read` `customer_portal:write`
+- [Get Customer](https://polar.sh/docs/api-reference/customer-portal/get-customer.md): Get authenticated customer.
+
+**Scopes**: `customer_portal:read` `customer_portal:write`
+- [Get Organization](https://polar.sh/docs/api-reference/customer-portal/get-organization.md): Get a customer portal's organization by slug.
+- [Activate License Key](https://polar.sh/docs/api-reference/customer-portal/license-keys/activate.md): Activate a license key instance.
+
+> This endpoint doesn't require authentication and can be safely used on a public
+> client, like a desktop application or a mobile app.
+> If you plan to validate a license key on a server, use the `/v1/license-keys/activate`
+> endpoint instead.
+- [Deactivate License Key](https://polar.sh/docs/api-reference/customer-portal/license-keys/deactivate.md): Deactivate a license key instance.
+
+> This endpoint doesn't require authentication and can be safely used on a public
+> client, like a desktop application or a mobile app.
+> If you plan to validate a license key on a server, use the `/v1/license-keys/deactivate`
+> endpoint instead.
+- [Get License Key](https://polar.sh/docs/api-reference/customer-portal/license-keys/get.md): Get a license key.
+
+**Scopes**: `customer_portal:read` `customer_portal:write`
+- [List License Keys](https://polar.sh/docs/api-reference/customer-portal/license-keys/list.md): **Scopes**: `customer_portal:read` `customer_portal:write`
+- [Validate License Key](https://polar.sh/docs/api-reference/customer-portal/license-keys/validate.md): Validate a license key.
+
+> This endpoint doesn't require authentication and can be safely used on a public
+> client, like a desktop application or a mobile app.
+> If you plan to validate a license key on a server, use the `/v1/license-keys/validate`
+> endpoint instead.
+- [Get Order](https://polar.sh/docs/api-reference/customer-portal/orders/get.md): Get an order by ID for the authenticated customer.
+
+**Scopes**: `customer_portal:read` `customer_portal:write`
+- [Get Order Invoice](https://polar.sh/docs/api-reference/customer-portal/orders/get-invoice.md): Get an order's invoice data.
+
+**Scopes**: `customer_portal:read` `customer_portal:write`
+- [List Orders](https://polar.sh/docs/api-reference/customer-portal/orders/list.md): List orders of the authenticated customer.
+
+**Scopes**: `customer_portal:read` `customer_portal:write`
+- [Update Order](https://polar.sh/docs/api-reference/customer-portal/orders/patch.md): Update an order for the authenticated customer.
+
+**Scopes**: `customer_portal:write`
+- [Generate Order Invoice](https://polar.sh/docs/api-reference/customer-portal/orders/post-invoice.md): Trigger generation of an order's invoice.
+
+**Scopes**: `customer_portal:read` `customer_portal:write`
+- [Assign Seat](https://polar.sh/docs/api-reference/customer-portal/seats/assign.md): **Scopes**: `customer_portal:write`
+- [List Seats](https://polar.sh/docs/api-reference/customer-portal/seats/list.md): **Scopes**: `customer_portal:read` `customer_portal:write`
+- [List Claimed Subscriptions](https://polar.sh/docs/api-reference/customer-portal/seats/list-subscriptions.md): List all subscriptions where the authenticated customer has claimed a seat.
+
+**Scopes**: `customer_portal:read` `customer_portal:write`
+- [Resend Invitation](https://polar.sh/docs/api-reference/customer-portal/seats/resend.md): **Scopes**: `customer_portal:write`
+- [Revoke Seat](https://polar.sh/docs/api-reference/customer-portal/seats/revoke.md): **Scopes**: `customer_portal:write`
+- [Create Customer Session](https://polar.sh/docs/api-reference/customer-portal/sessions/create.md): Create a customer session.
+
+**Scopes**: `customer_sessions:write`
+- [Cancel Subscription](https://polar.sh/docs/api-reference/customer-portal/subscriptions/cancel.md): Cancel a subscription of the authenticated customer.
+
+**Scopes**: `customer_portal:write`
+- [Get Subscription](https://polar.sh/docs/api-reference/customer-portal/subscriptions/get.md): Get a subscription for the authenticated customer.
+
+**Scopes**: `customer_portal:read` `customer_portal:write`
+- [List Subscriptions](https://polar.sh/docs/api-reference/customer-portal/subscriptions/list.md): List subscriptions of the authenticated customer.
+
+**Scopes**: `customer_portal:read` `customer_portal:write`
+- [Update Subscription](https://polar.sh/docs/api-reference/customer-portal/subscriptions/update.md): Update a subscription of the authenticated customer.
+
+**Scopes**: `customer_portal:write`
+- [Assign Seat](https://polar.sh/docs/api-reference/customer-seats/assign.md): **Scopes**: `customer_seats:write`
+- [Claim Seat](https://polar.sh/docs/api-reference/customer-seats/claim.md)
+- [Get Claim Info](https://polar.sh/docs/api-reference/customer-seats/get-claim-info.md)
+- [List Seats](https://polar.sh/docs/api-reference/customer-seats/list.md): **Scopes**: `customer_seats:write`
+- [Resend Invitation](https://polar.sh/docs/api-reference/customer-seats/resend.md): **Scopes**: `customer_seats:write`
+- [Revoke Seat](https://polar.sh/docs/api-reference/customer-seats/revoke.md): **Scopes**: `customer_seats:write`
+- [Create Customer](https://polar.sh/docs/api-reference/customers/create.md): Create a customer.
+
+**Scopes**: `customers:write`
+- [Delete Customer](https://polar.sh/docs/api-reference/customers/delete.md): Delete a customer.
+
+This action cannot be undone and will immediately:
+- Cancel any active subscriptions for the customer
+- Revoke all their benefits
+- Clear any `external_id`
+
+Use it only in the context of deleting a user within your
+own service. Otherwise, use more granular API endpoints to cancel
+a specific subscription or revoke certain benefits.
+
+Note: The customers information will nonetheless be retained for historic
+orders and subscriptions.
+
+**Scopes**: `customers:write`
+- [Delete Customer by External ID](https://polar.sh/docs/api-reference/customers/delete-external.md): Delete a customer by external ID.
+
+Immediately cancels any active subscriptions and revokes any active benefits.
+
+**Scopes**: `customers:write`
+- [Get Customer](https://polar.sh/docs/api-reference/customers/get.md): Get a customer by ID.
+
+**Scopes**: `customers:read` `customers:write`
+- [Get Customer by External ID](https://polar.sh/docs/api-reference/customers/get-external.md): Get a customer by external ID.
+
+**Scopes**: `customers:read` `customers:write`
+- [List Customers](https://polar.sh/docs/api-reference/customers/list.md): List customers.
+
+**Scopes**: `customers:read` `customers:write`
+- [Get Customer State](https://polar.sh/docs/api-reference/customers/state.md): Get a customer state by ID.
+
+The customer state includes information about
+the customer's active subscriptions and benefits.
+
+It's the ideal endpoint to use when you need to get a full overview
+of a customer's status.
+
+**Scopes**: `customers:read` `customers:write`
+- [Get Customer State by External ID](https://polar.sh/docs/api-reference/customers/state-external.md): Get a customer state by external ID.
+
+The customer state includes information about
+the customer's active subscriptions and benefits.
+
+It's the ideal endpoint to use when you need to get a full overview
+of a customer's status.
+
+**Scopes**: `customers:read` `customers:write`
+- [Update Customer](https://polar.sh/docs/api-reference/customers/update.md): Update a customer.
+
+**Scopes**: `customers:write`
+- [Update Customer by External ID](https://polar.sh/docs/api-reference/customers/update-external.md): Update a customer by external ID.
+
+**Scopes**: `customers:write`
+- [Create Discount](https://polar.sh/docs/api-reference/discounts/create.md): Create a discount.
+
+**Scopes**: `discounts:write`
+- [Delete Discount](https://polar.sh/docs/api-reference/discounts/delete.md): Delete a discount.
+
+**Scopes**: `discounts:write`
+- [Get Discount](https://polar.sh/docs/api-reference/discounts/get.md): Get a discount by ID.
+
+**Scopes**: `discounts:read` `discounts:write`
+- [List Discounts](https://polar.sh/docs/api-reference/discounts/list.md): List discounts.
+
+**Scopes**: `discounts:read` `discounts:write`
+- [Update Discount](https://polar.sh/docs/api-reference/discounts/update.md): Update a discount.
+
+**Scopes**: `discounts:write`
+- [Get Event](https://polar.sh/docs/api-reference/events/get.md): Get an event by ID.
+
+**Scopes**: `events:read` `events:write`
+- [Ingest Events](https://polar.sh/docs/api-reference/events/ingest.md): Ingest batch of events.
+
+**Scopes**: `events:write`
+- [List Events](https://polar.sh/docs/api-reference/events/list.md): List events.
+
+**Scopes**: `events:read` `events:write`
+- [Complete File Upload](https://polar.sh/docs/api-reference/files/complete-upload.md): Complete a file upload.
+
+**Scopes**: `files:write`
+- [Create File](https://polar.sh/docs/api-reference/files/create.md): Create a file.
+
+**Scopes**: `files:write`
+- [Delete File](https://polar.sh/docs/api-reference/files/delete.md): Delete a file.
+
+**Scopes**: `files:write`
+- [List Files](https://polar.sh/docs/api-reference/files/list.md): List files.
+
+**Scopes**: `files:read` `files:write`
+- [Update File](https://polar.sh/docs/api-reference/files/update.md): Update a file.
+
+**Scopes**: `files:write`
+- [API Overview](https://polar.sh/docs/api-reference/introduction.md): Base URLs, authentication, pagination, rate limits, and the difference between the Core API and the Customer Portal API
+- [Activate License Key](https://polar.sh/docs/api-reference/license-keys/activate.md): Activate a license key instance.
+
+**Scopes**: `license_keys:write`
+- [Deactivate License Key](https://polar.sh/docs/api-reference/license-keys/deactivate.md): Deactivate a license key instance.
+
+**Scopes**: `license_keys:write`
+- [Get License Key](https://polar.sh/docs/api-reference/license-keys/get.md): Get a license key.
+
+**Scopes**: `license_keys:read` `license_keys:write`
+- [Get Activation](https://polar.sh/docs/api-reference/license-keys/get-activation.md): Get a license key activation.
+
+**Scopes**: `license_keys:read` `license_keys:write`
+- [List License Keys](https://polar.sh/docs/api-reference/license-keys/list.md): Get license keys connected to the given organization & filters.
+
+**Scopes**: `license_keys:read` `license_keys:write`
+- [Update License Key](https://polar.sh/docs/api-reference/license-keys/update.md): Update a license key.
+
+**Scopes**: `license_keys:write`
+- [Validate License Key](https://polar.sh/docs/api-reference/license-keys/validate.md): Validate a license key.
+
+**Scopes**: `license_keys:write`
+- [Create Meter](https://polar.sh/docs/api-reference/meters/create.md): Create a meter.
+
+**Scopes**: `meters:write`
+- [Get Meter](https://polar.sh/docs/api-reference/meters/get.md): Get a meter by ID.
+
+**Scopes**: `meters:read` `meters:write`
+- [Get Meter Quantities](https://polar.sh/docs/api-reference/meters/get-quantities.md): Get quantities of a meter over a time period.
+
+**Scopes**: `meters:read` `meters:write`
+- [List Meters](https://polar.sh/docs/api-reference/meters/list.md): List meters.
+
+**Scopes**: `meters:read` `meters:write`
+- [Update Meter](https://polar.sh/docs/api-reference/meters/update.md): Update a meter.
+
+**Scopes**: `meters:write`
+- [Get Metrics](https://polar.sh/docs/api-reference/metrics/get.md): Get metrics about your orders and subscriptions.
+
+Currency values are output in cents.
+
+**Scopes**: `metrics:read`
+- [Get Metrics Limits](https://polar.sh/docs/api-reference/metrics/get-limits.md): Get the interval limits for the metrics endpoint.
+
+**Scopes**: `metrics:read`
+- [Authorize](https://polar.sh/docs/api-reference/oauth2/connect/authorize.md)
+- [Get User Info](https://polar.sh/docs/api-reference/oauth2/connect/get-user-info.md): Get information about the authenticated user.
+- [Introspect Token](https://polar.sh/docs/api-reference/oauth2/connect/introspect-token.md): Get information about an access token.
+- [Request Token](https://polar.sh/docs/api-reference/oauth2/connect/request-token.md): Request an access token using a valid grant.
+- [Revoke Token](https://polar.sh/docs/api-reference/oauth2/connect/revoke-token.md): Revoke an access token or a refresh token.
+- [Get Order](https://polar.sh/docs/api-reference/orders/get.md): Get an order by ID.
+
+**Scopes**: `orders:read`
+- [Get Order Invoice](https://polar.sh/docs/api-reference/orders/get-invoice.md): Get an order's invoice data.
+
+**Scopes**: `orders:read`
+- [List Orders](https://polar.sh/docs/api-reference/orders/list.md): List orders.
+
+**Scopes**: `orders:read`
+- [Update Order](https://polar.sh/docs/api-reference/orders/patch.md): Update an order.
+
+**Scopes**: `orders:write`
+- [Generate Order Invoice](https://polar.sh/docs/api-reference/orders/post-invoice.md): Trigger generation of an order's invoice.
+
+**Scopes**: `orders:read`
+- [Create Organization](https://polar.sh/docs/api-reference/organizations/create.md): Create an organization.
+
+**Scopes**: `organizations:write`
+- [Get Organization](https://polar.sh/docs/api-reference/organizations/get.md): Get an organization by ID.
+
+**Scopes**: `organizations:read` `organizations:write`
+- [List Organizations](https://polar.sh/docs/api-reference/organizations/list.md): List organizations.
+
+**Scopes**: `organizations:read` `organizations:write`
+- [Update Organization](https://polar.sh/docs/api-reference/organizations/update.md): Update an organization.
+
+**Scopes**: `organizations:write`
+- [Create Product](https://polar.sh/docs/api-reference/products/create.md): Create a product.
+
+**Scopes**: `products:write`
+- [Get Product](https://polar.sh/docs/api-reference/products/get.md): Get a product by ID.
+
+**Scopes**: `products:read` `products:write`
+- [List Products](https://polar.sh/docs/api-reference/products/list.md): List products.
+
+**Scopes**: `products:read` `products:write`
+- [Update Product](https://polar.sh/docs/api-reference/products/update.md): Update a product.
+
+**Scopes**: `products:write`
+- [Update Product Benefits](https://polar.sh/docs/api-reference/products/update-benefits.md): Update benefits granted by a product.
+
+**Scopes**: `products:write`
+- [Create Refund](https://polar.sh/docs/api-reference/refunds/create.md): Create a refund.
+
+**Scopes**: `refunds:write`
+- [List Refunds](https://polar.sh/docs/api-reference/refunds/list.md): List products.
+
+**Scopes**: `refunds:read` `refunds:write`
+- [Create Subscription](https://polar.sh/docs/api-reference/subscriptions/create.md): Create a subscription programmatically.
+
+This endpoint only allows to create subscription on free products.
+For paid products, use the checkout flow.
+
+No initial order will be created and no confirmation email will be sent.
+
+**Scopes**: `subscriptions:write`
+- [Get Subscription](https://polar.sh/docs/api-reference/subscriptions/get.md): Get a subscription by ID.
+
+**Scopes**: `subscriptions:read` `subscriptions:write`
+- [List Subscriptions](https://polar.sh/docs/api-reference/subscriptions/list.md): List subscriptions.
+
+**Scopes**: `subscriptions:read` `subscriptions:write`
+- [Revoke Subscription](https://polar.sh/docs/api-reference/subscriptions/revoke.md): Revoke a subscription, i.e cancel immediately.
+
+**Scopes**: `subscriptions:write`
+- [Update Subscription](https://polar.sh/docs/api-reference/subscriptions/update.md): Update a subscription.
+
+**Scopes**: `subscriptions:write`
+- [benefit.created](https://polar.sh/docs/api-reference/webhooks/benefit.created.md)
+- [benefit.updated](https://polar.sh/docs/api-reference/webhooks/benefit.updated.md)
+- [benefit_grant.created](https://polar.sh/docs/api-reference/webhooks/benefit_grant.created.md)
+- [benefit_grant.cycled](https://polar.sh/docs/api-reference/webhooks/benefit_grant.cycled.md)
+- [benefit_grant.revoked](https://polar.sh/docs/api-reference/webhooks/benefit_grant.revoked.md)
+- [benefit_grant.updated](https://polar.sh/docs/api-reference/webhooks/benefit_grant.updated.md)
+- [checkout.created](https://polar.sh/docs/api-reference/webhooks/checkout.created.md)
+- [checkout.updated](https://polar.sh/docs/api-reference/webhooks/checkout.updated.md)
+- [customer.created](https://polar.sh/docs/api-reference/webhooks/customer.created.md)
+- [customer.deleted](https://polar.sh/docs/api-reference/webhooks/customer.deleted.md)
+- [customer.state_changed](https://polar.sh/docs/api-reference/webhooks/customer.state_changed.md)
+- [customer.updated](https://polar.sh/docs/api-reference/webhooks/customer.updated.md)
+- [customer_seat.assigned](https://polar.sh/docs/api-reference/webhooks/customer_seat.assigned.md)
+- [customer_seat.claimed](https://polar.sh/docs/api-reference/webhooks/customer_seat.claimed.md)
+- [customer_seat.revoked](https://polar.sh/docs/api-reference/webhooks/customer_seat.revoked.md)
+- [Create Webhook Endpoint](https://polar.sh/docs/api-reference/webhooks/endpoints/create.md): Create a webhook endpoint.
+
+**Scopes**: `webhooks:write`
+- [Delete Webhook Endpoint](https://polar.sh/docs/api-reference/webhooks/endpoints/delete.md): Delete a webhook endpoint.
+
+**Scopes**: `webhooks:write`
+- [Get Webhook Endpoint](https://polar.sh/docs/api-reference/webhooks/endpoints/get.md): Get a webhook endpoint by ID.
+
+**Scopes**: `webhooks:read` `webhooks:write`
+- [List Webhook Endpoints](https://polar.sh/docs/api-reference/webhooks/endpoints/list.md): List webhook endpoints.
+
+**Scopes**: `webhooks:read` `webhooks:write`
+- [Update Webhook Endpoint](https://polar.sh/docs/api-reference/webhooks/endpoints/update.md): Update a webhook endpoint.
+
+**Scopes**: `webhooks:write`
+- [order.created](https://polar.sh/docs/api-reference/webhooks/order.created.md)
+- [order.paid](https://polar.sh/docs/api-reference/webhooks/order.paid.md)
+- [order.refunded](https://polar.sh/docs/api-reference/webhooks/order.refunded.md)
+- [order.updated](https://polar.sh/docs/api-reference/webhooks/order.updated.md)
+- [organization.updated](https://polar.sh/docs/api-reference/webhooks/organization.updated.md)
+- [product.created](https://polar.sh/docs/api-reference/webhooks/product.created.md)
+- [product.updated](https://polar.sh/docs/api-reference/webhooks/product.updated.md)
+- [refund.created](https://polar.sh/docs/api-reference/webhooks/refund.created.md)
+- [refund.updated](https://polar.sh/docs/api-reference/webhooks/refund.updated.md)
+- [subscription.active](https://polar.sh/docs/api-reference/webhooks/subscription.active.md)
+- [subscription.canceled](https://polar.sh/docs/api-reference/webhooks/subscription.canceled.md)
+- [subscription.created](https://polar.sh/docs/api-reference/webhooks/subscription.created.md)
+- [subscription.revoked](https://polar.sh/docs/api-reference/webhooks/subscription.revoked.md)
+- [subscription.uncanceled](https://polar.sh/docs/api-reference/webhooks/subscription.uncanceled.md)
+- [subscription.updated](https://polar.sh/docs/api-reference/webhooks/subscription.updated.md)
+- [API Changelog](https://polar.sh/docs/changelog/api.md): Stay up to date with the latest changes, improvements and deprecations to the Polar API.
+- [Product Updates](https://polar.sh/docs/changelog/recent.md): Stay up to date with the latest changes and improvements to Polar.
+- [Analytics](https://polar.sh/docs/features/analytics.md)
+- [Credits Benefit](https://polar.sh/docs/features/benefits/credits.md): Create your own Credits benefit
+- [Custom Benefit](https://polar.sh/docs/features/benefits/custom.md): Create your own Custom benefit
+- [Automate Discord Invites & Roles](https://polar.sh/docs/features/benefits/discord-access.md): Sell Discord access & roles with ease
+- [Automate Customer File Downloads](https://polar.sh/docs/features/benefits/file-downloads.md): Offer digital file downloads with ease
+- [Automate Private GitHub Repo(s) Access](https://polar.sh/docs/features/benefits/github-access.md): Sell premium GitHub repository access with ease
+- [Automated Benefits](https://polar.sh/docs/features/benefits/introduction.md)
+- [Automate Customer License Key Management](https://polar.sh/docs/features/benefits/license-keys.md): Sell license key access to your service, software or APIs with ease
+- [Embedded Checkout](https://polar.sh/docs/features/checkout/embed.md): Embed our checkout directly on your site
+- [Checkout Links](https://polar.sh/docs/features/checkout/links.md): Sell your digital products with ease by sharing a checkout link to select products
+- [Checkout API](https://polar.sh/docs/features/checkout/session.md): Create checkout sessions programmatically for complete control
+- [Cost Events](https://polar.sh/docs/features/cost-insights/cost-events.md): Track costs by adding cost metadata to your ingested events
+- [Cost Traces](https://polar.sh/docs/features/cost-insights/cost-traces.md): Aggregate events by user sessions to calculate costs
+- [Introduction to Cost Insights](https://polar.sh/docs/features/cost-insights/introduction.md): Track costs, profits, and customer lifetime value with event-based cost tracking
+- [Custom Fields](https://polar.sh/docs/features/custom-fields.md): Learn how to add custom input fields to your checkout with Polar
+- [Customer Management](https://polar.sh/docs/features/customer-management.md): Get insights on your customers and sales
+- [Customer Portal](https://polar.sh/docs/features/customer-portal.md): Enable customers to view & manage orders and subscriptions easily
+- [Discounts](https://polar.sh/docs/features/discounts.md): Create discounts on products and subscriptions
+- [Setup a Payout Account](https://polar.sh/docs/features/finance/accounts.md)
+- [Account Balance & Transparent Fees](https://polar.sh/docs/features/finance/balance.md): Monitor your Polar balance without hidden fees
+- [Payouts](https://polar.sh/docs/features/finance/payouts.md): Easily withdraw money from your Polar account at any time
+- [Affonso Affiliates with Polar](https://polar.sh/docs/features/integrations/affonso.md)
+- [Polar Integration in Fernand](https://polar.sh/docs/features/integrations/fernand.md): Learn how to sync customer and payment data from Polar to Fernand.
+- [Polar for Framer](https://polar.sh/docs/features/integrations/framer.md): The fastest way to sell digital products on your Framer site
+- [Purchase Power Parity with ParityDeals](https://polar.sh/docs/features/integrations/paritydeals.md): Offer products with different price across the globe
+- [Polar for Raycast](https://polar.sh/docs/features/integrations/raycast.md): The fastest way to access Polar from your keyboard
+- [Polar for Zapier](https://polar.sh/docs/features/integrations/zapier.md): Connect Polar to hundreds of other apps with Zapier
+- [Orders & Subscriptions](https://polar.sh/docs/features/orders.md)
+- [Products](https://polar.sh/docs/features/products.md): Create digital products on Polar in minutes
+- [Manage Refunds](https://polar.sh/docs/features/refunds.md): You can easily refund orders on Polar - both in full or in parts.
+- [Seat-Based Pricing](https://polar.sh/docs/features/seat-based-pricing.md): Sell team products with assignable seats and tiered pricing
+- [Trials](https://polar.sh/docs/features/trials.md): Offer free trials on your subscriptions
+- [Billing](https://polar.sh/docs/features/usage-based-billing/billing.md): How billing works with Usage Based
+- [Credits](https://polar.sh/docs/features/usage-based-billing/credits.md): Crediting customers for Usage Based Billing
+- [Event Ingestion](https://polar.sh/docs/features/usage-based-billing/event-ingestion.md): Ingest events from your application
+- [Delta Time Strategy](https://polar.sh/docs/features/usage-based-billing/ingestion-strategies/delta-time-strategy.md): Ingest delta time of arbitrary execution
+- [Strategy Introduction](https://polar.sh/docs/features/usage-based-billing/ingestion-strategies/ingestion-strategy.md): Ingestion strategies for Usage Based Billing
+- [LLM Strategy](https://polar.sh/docs/features/usage-based-billing/ingestion-strategies/llm-strategy.md): Ingestion strategy for LLM Usage
+- [S3 Strategy](https://polar.sh/docs/features/usage-based-billing/ingestion-strategies/s3-strategy.md): Ingestion strategy for S3 Operations
+- [Stream Strategy](https://polar.sh/docs/features/usage-based-billing/ingestion-strategies/stream-strategy.md): Ingestion strategy for Readable & Writable Streams
+- [Introduction](https://polar.sh/docs/features/usage-based-billing/introduction.md): Usage based billing using ingested events
+- [Meters](https://polar.sh/docs/features/usage-based-billing/meters.md): Creating and managing meters for Usage Based Billing
+- [How to allow multiple subscriptions per customer](https://polar.sh/docs/guides/allow-multiple-subscriptions-per-customer.md): Learn how to allow multiple subscriptions per customer in Polar.
+- [How to automatically share links to customers after purchase](https://polar.sh/docs/guides/automate-post-purchase-link-sharing.md): Learn how to use the Custom Benefit to automatically share links with customers after purchase.
+- [How to Change Account Email (as a Merchant)](https://polar.sh/docs/guides/change-email-as-merchant.md): Learn how to change your account email on Polar as a Merchant.
+- [How to Create Checkout Session](https://polar.sh/docs/guides/create-checkout-session.md): Learn how to create checkout sessions via API.
+- [How to Create Multiple Organizations](https://polar.sh/docs/guides/create-multiple-organizations.md): Learn how to create multiple organizations.
+- [How to create product variants](https://polar.sh/docs/guides/create-variants.md): Learn how create product variants in Polar and how customers can easily switch between them in the customer portal.
+- [How to Customize Benefits Order in Checkouts](https://polar.sh/docs/guides/customize-benefits-order-in-checkouts.md): Learn how to customize the order in which Benefits appear in checkouts.
+- [How to Customize Products Order in Checkouts](https://polar.sh/docs/guides/customize-products-order-in-checkouts.md): Learn how to customize the order in which products appear in checkouts.
+- [How to disable subscription upgrades/downgrades in customer portal](https://polar.sh/docs/guides/disable-subscription-changes-in-customer-portal.md): Learn how to disable the option for customers to upgrade or downgrade subscription plans from the customer portal.
+- [Introduction](https://polar.sh/docs/guides/introduction.md): A collection of how-tos with Polar in form of step-by-step guides and tutorials.
+- [Integrate Polar with Laravel](https://polar.sh/docs/guides/laravel.md): In this guide, we'll show you how to integrate Polar with Laravel.
+- [Integrate Polar with Next.js](https://polar.sh/docs/guides/nextjs.md): In this guide, we'll show you how to integrate Polar with Next.js.
+- [Implementing Seat-Based Pricing](https://polar.sh/docs/guides/seat-based-pricing.md): Complete guide to implementing team products with seat-based pricing
+- [How to perform subscription downgrades](https://polar.sh/docs/guides/subscription-downgrades.md): Learn how to downgrade a subscription as a merchant or a customer.
+- [How to perform subscription upgrades](https://polar.sh/docs/guides/subscription-upgrades.md): Learn how to upgrade a subscription as a merchant or a customer.
+- [How to Switch Checkout Theme](https://polar.sh/docs/guides/theme-switch-in-checkout.md): Learn how to switch the theme in a checkout session and a checkout link.
+- [Authentication](https://polar.sh/docs/integrate/authentication.md)
+- [Customer State](https://polar.sh/docs/integrate/customer-state.md): The quickest way to integrate billing in your application
+- [Polar over Model Context Protocol (MCP)](https://polar.sh/docs/integrate/mcp.md): Extend the capabilities of your AI agents with Polar's MCP Server
+- [OAuth 2.0 Connect](https://polar.sh/docs/integrate/oauth2/connect.md)
+- [Introduction](https://polar.sh/docs/integrate/oauth2/introduction.md): For partners building services and extensions for Polar customers
+- [Create an OAuth 2.0 Client](https://polar.sh/docs/integrate/oauth2/setup.md)
+- [Sandbox Environment](https://polar.sh/docs/integrate/sandbox.md)
+- [Astro](https://polar.sh/docs/integrate/sdk/adapters/astro.md): Payments and Checkouts made dead simple with Astro
+- [BetterAuth](https://polar.sh/docs/integrate/sdk/adapters/better-auth.md): Payments and Checkouts made dead simple with BetterAuth
+- [Deno](https://polar.sh/docs/integrate/sdk/adapters/deno.md): Payments and Checkouts made dead simple with Deno
+- [Elysia](https://polar.sh/docs/integrate/sdk/adapters/elysia.md): Payments and Checkouts made dead simple with Elysia
+- [Express](https://polar.sh/docs/integrate/sdk/adapters/express.md): Payments and Checkouts made dead simple with Express
+- [Fastify](https://polar.sh/docs/integrate/sdk/adapters/fastify.md): Payments and Checkouts made dead simple with Fastify
+- [Hono](https://polar.sh/docs/integrate/sdk/adapters/hono.md): Payments and Checkouts made dead simple with Hono
+- [null](https://polar.sh/docs/integrate/sdk/adapters/laravel.md)
+- [NextJS](https://polar.sh/docs/integrate/sdk/adapters/nextjs.md): Payments and Checkouts made dead simple with NextJS
+- [Nuxt](https://polar.sh/docs/integrate/sdk/adapters/nuxt.md): Payments and Checkouts made dead simple with Nuxt
+- [Remix](https://polar.sh/docs/integrate/sdk/adapters/remix.md): Payments and Checkouts made dead simple with Remix
+- [Sveltekit](https://polar.sh/docs/integrate/sdk/adapters/sveltekit.md): Payments and Checkouts made dead simple with Sveltekit
+- [TanStack Start](https://polar.sh/docs/integrate/sdk/adapters/tanstack-start.md): Payments and Checkouts made dead simple with TanStack Start
+- [Go SDK](https://polar.sh/docs/integrate/sdk/golang.md)
+- [PHP SDK](https://polar.sh/docs/integrate/sdk/php.md)
+- [Python SDK](https://polar.sh/docs/integrate/sdk/python.md)
+- [TypeScript SDK](https://polar.sh/docs/integrate/sdk/typescript.md): SDK for JavaScript runtimes (Node.js and browsers)
+- [Handle & monitor webhook deliveries](https://polar.sh/docs/integrate/webhooks/delivery.md): How to parse, validate and handle webhooks and monitor their deliveries on Polar
+- [Setup Webhooks](https://polar.sh/docs/integrate/webhooks/endpoints.md): Get notifications asynchronously when events occur instead of having to poll for updates
+- [Webhook Events](https://polar.sh/docs/integrate/webhooks/events.md): Our webhook events and in which context they are useful
+- [Polar: Turn Your Software into a Business](https://polar.sh/docs/introduction.md): The next generation unicorns will be built by smaller teams. Polar makes that dream possible.
+- [null](https://polar.sh/docs/merchant-of-record/acceptable-use.md)
+- [null](https://polar.sh/docs/merchant-of-record/account-reviews.md)
+- [Fees](https://polar.sh/docs/merchant-of-record/fees.md): Transparent fees at a 20% discount vs. other MoRs
+- [Merchant of Record](https://polar.sh/docs/merchant-of-record/introduction.md): An open source and transparent Merchant of Record
+- [null](https://polar.sh/docs/merchant-of-record/supported-countries.md)
+- [Migrate to Polar](https://polar.sh/docs/migrate.md): Get set up on Polar in minutes from an existing store
+- [Support](https://polar.sh/docs/support.md)

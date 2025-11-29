@@ -15,6 +15,13 @@
       "when": 1764231716878,
       "tag": "0001_productive_terror",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764231717878,
+      "tag": "0002_better_auth_fk",
+      "breakpoints": true
     }
   ]
 }
