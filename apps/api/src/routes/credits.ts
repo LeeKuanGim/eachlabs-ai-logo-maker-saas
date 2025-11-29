@@ -264,8 +264,10 @@ credits.get("/transactions", async (c) => {
   }
 
   try {
-    const limit = Math.min(Number(c.req.query("limit")) || 50, 100)
-    const offset = Number(c.req.query("offset")) || 0
+    const parsedLimit = Number.parseInt(c.req.query("limit") ?? "50", 10)
+    const parsedOffset = Number.parseInt(c.req.query("offset") ?? "0", 10)
+    const limit = Number.isFinite(parsedLimit) ? Math.min(Math.max(parsedLimit, 1), 100) : 50
+    const offset = Number.isFinite(parsedOffset) && parsedOffset > 0 ? parsedOffset : 0
 
     const transactions = await db
       .select({

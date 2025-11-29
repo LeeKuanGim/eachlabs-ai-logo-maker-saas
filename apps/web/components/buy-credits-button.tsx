@@ -29,6 +29,7 @@ export function BuyCreditsButton({
   ...buttonProps
 }: BuyCreditsButtonProps) {
   const { data, isLoading, isError } = useCreditPackages()
+  const { data: sessionData, isPending: isSessionLoading } = authClient.useSession()
   const [isPending, setIsPending] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
 
@@ -50,22 +51,36 @@ export function BuyCreditsButton({
       return
     }
 
+    if (isSessionLoading) {
+      setLocalError("Checking your session. Please try again in a moment.")
+      return
+    }
+
+    if (!sessionData?.session) {
+      setLocalError("Please sign in to purchase credits.")
+      return
+    }
+
     try {
       setIsPending(true)
       await authClient.checkout({
         products: [targetPackage.polarProductId],
       })
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to start checkout. Please try again."
-      setLocalError(message)
+      if (error instanceof Error && error.message.toLowerCase().includes("unauthorized")) {
+        setLocalError("Please sign in to purchase credits.")
+      } else {
+        const message =
+          error instanceof Error ? error.message : "Failed to start checkout. Please try again."
+        setLocalError(message)
+      }
       console.error("Checkout error:", error)
     } finally {
       setIsPending(false)
     }
   }
 
-  const showDisabled = disabled || isLoading || isPending || isError
+  const showDisabled = disabled || isLoading || isPending || isError || isSessionLoading
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
