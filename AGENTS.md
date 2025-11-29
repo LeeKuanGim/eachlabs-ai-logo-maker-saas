@@ -65,10 +65,12 @@ bun run db:studio              # Open Drizzle Studio GUI
 - Required envs for API: `DATABASE_URL`, `EACHLABS_API_KEY`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`; set `DATABASE_SSL=true` in production. Use `SIGNUP_BONUS_CREDITS` to set the initial free credit grant and `ADMIN_EMAILS` for `/api/admin/*` access.
 - Required envs for Web: `NEXT_PUBLIC_API_BASE_URL` (default: `http://localhost:3002`).
 - CORS: `ALLOWED_ORIGINS` comma-separated list for the API.
+- History retention: `GENERATION_RETENTION_DAYS` (default 365) applies to `/api/predictions` history listing.
 - Do not commit secrets. `.env` / `.env.local` files are ignored.
 
 ## Architecture Overview
 - Auth: Better Auth hosted in API, handler at `/api/auth/*`; Next.js uses auth client pointing at API base URL.
 - Logo flow: Client submits form → `POST /api/predictions` persists request + calls Eachlabs (charges 1 credit per requested output, max 4) → client polls `GET /api/predictions/{id}` (auth + owner-only) until status is `succeeded` (implemented with TanStack Query polling).
+- History: `GET /api/predictions` is auth-only, paginated (limit/offset), filtered to the requesting user, and retention-limited.
 - DB table: `logo_generations` with status/images/provider IDs; indexes on `created_at`, `status`, `provider_prediction_id`.
 - Model mapping: `nano-banana` → `nano-banana`, `seedream-v4` → `seedream-v4-text-to-image`, `reve-text` → `reve-text-to-image`.

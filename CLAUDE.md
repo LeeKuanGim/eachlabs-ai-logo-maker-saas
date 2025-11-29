@@ -49,7 +49,7 @@ apps/
 - Drizzle ORM with PostgreSQL
 - Better Auth server in `src/auth.ts` (drizzle adapter, handler mounted at `/api/auth/*`)
 - Anonymous auth plugin enabled
-- Routes in `src/routes/`, database in `src/db/` (migrations in `src/db/migrations/`)
+- Routes in `src/routes/`, database schemas in `src/db/schemas/` (migrations in `src/db/migrations/`)
 
 ### Data Flow
 
@@ -59,6 +59,7 @@ apps/
    - `seedream-v4` → `seedream-v4-text-to-image`
    - `reve-text` → `reve-text-to-image`
 3. **Credits**: 1 credit per logo output (max 4 per request). Credits are deducted upfront and refunded on provider failures. `GET /api/predictions/:id` is authenticated and locked to the owner of the generation.
+4. **History**: `GET /api/predictions` is auth-only, paginated (limit/offset), filtered to the requesting user, and limited to retention window (`GENERATION_RETENTION_DAYS`, default 365). Frontend history hook consumes this endpoint with credentials.
 
 ### Environment Variables
 
@@ -73,13 +74,16 @@ apps/
 - `PGPOOL_MAX`, `PGPOOL_IDLE_MS`, `PGPOOL_CONN_TIMEOUT_MS` - Pool tuning
 - `SIGNUP_BONUS_CREDITS` - Initial credits granted on first auth (default 1)
 - `ADMIN_EMAILS` - Comma-separated list of admin emails for `/api/admin/*`
+- `GENERATION_RETENTION_DAYS` - Retention window for history listing (default 365)
 
 **Web (`apps/web/.env.local`):**
 - `NEXT_PUBLIC_API_BASE_URL` - API endpoint (required, points to API origin)
 
 ### Key Files
 
-- `apps/api/src/routes/predictions.ts` - Core logo generation logic and Eachlabs integration
-- `apps/api/src/db/schema.ts` - Database schema (`logoGenerations` table)
+- `apps/api/src/routes/predictions.ts` - Core logo generation logic, history listing, and Eachlabs integration
+- `apps/api/src/db/schemas/` - Database schemas (auth, credits, generations)
+- `apps/api/src/db/migrations/0002_better_auth_fk.sql` - Better Auth tables + FK on `logo_generations.user_id` (ON DELETE SET NULL)
 - `apps/web/components/logo-maker.tsx` - Main form component with TanStack Query mutations + polling logic
+- `apps/web/hooks/use-history.ts` - History fetch (auth-required, uses `/api/predictions`)
 - `apps/web/components/mvpblocks/login-form-3.tsx` & `register-form.tsx` - Better Auth client flows powered by TanStack Query

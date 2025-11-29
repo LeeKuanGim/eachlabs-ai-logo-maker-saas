@@ -5,7 +5,7 @@
 ### Stack Summary
 - **Monorepo**: Turborepo with Bun workspaces
 - **Frontend**: Next.js 15.5 (App Router) + React 19 + TypeScript
-- **Backend**: Hono framework on Bun runtime
+- **Backend**: Hono framework on Bun runtime + Better Auth (email + anonymous)
 - **Database**: PostgreSQL with Drizzle ORM
 - **Styling**: Tailwind CSS 4.x with shadcn/ui components
 - **Form Handling**: React Hook Form 7.x with Zod validation
@@ -20,7 +20,8 @@ A **SaaS AI-powered logo generation application** that allows users to create pr
 - Color-based logo generation with gradient support
 - Batch image generation (up to 4 images at once; 1 credit per output)
 - Download functionality for generated logos
-- Database persistence of generation history
+- Database persistence of generation history (auth-required access)
+- Better Auth-backed sessions (email + anonymous); 1 free signup credit
 
 ### Architecture Overview
 ```
@@ -43,9 +44,24 @@ A **SaaS AI-powered logo generation application** that allows users to create pr
 ### Base Configuration
 - **API Base URL**: `http://localhost:3002` (configurable via `NEXT_PUBLIC_API_BASE_URL`)
 - **External API**: `https://api.eachlabs.ai/v1/prediction/`
-- **Authentication**: API key-based (X-API-Key header for Eachlabs)
+- **Authentication**: Better Auth sessions for app endpoints; API key (X-API-Key) for Eachlabs provider
 
 ### Endpoints
+#### GET /api/predictions
+**Purpose**: List the authenticated user’s generation history (with retention filtering and pagination).
+**Auth**: Required (Better Auth session).
+**Query Params**:
+- `limit` (default 50, max 100)
+- `offset` (default 0)
+
+**Response**:
+```typescript
+{
+  history: LogoGeneration[]
+  pagination: { limit: number; offset: number }
+}
+```
+Notes: Results are filtered to the requesting user and to the last 365 days by default (`GENERATION_RETENTION_DAYS` override).
 
 #### POST /api/predictions
 **Purpose**: Create a new logo generation prediction
@@ -173,7 +189,7 @@ graph LR
 
 ### Database: PostgreSQL with Drizzle ORM
 
-**Schema Location**: `apps/api/src/db/schema.ts`
+**Schema Location**: `apps/api/src/db/schemas`
 **Connection**: `apps/api/src/db/index.ts`
 **Migrations**: `apps/api/src/db/migrations/`
 
@@ -183,12 +199,14 @@ graph LR
 | Column | Type | Description |
 |--------|------|-------------|
 | id | UUID | Primary key (auto-generated) |
+| user_id | TEXT (FK) | References `user.id`, null on delete |
 | app_name | TEXT | Application name |
 | app_focus | TEXT | Application focus/theme |
 | color1 | VARCHAR(64) | Primary color |
 | color2 | VARCHAR(64) | Secondary color |
 | model | VARCHAR(64) | AI model used |
 | output_count | INTEGER | Number of images requested |
+| credits_charged | INTEGER | Credits deducted for the request |
 | prompt | TEXT | Generated prompt sent to AI |
 | status | ENUM | queued, running, succeeded, failed |
 | provider_prediction_id | VARCHAR(128) | Eachlabs prediction ID |
@@ -198,7 +216,7 @@ graph LR
 | created_at | TIMESTAMP | Creation timestamp |
 | updated_at | TIMESTAMP | Last update timestamp |
 
-**Indexes**: `created_at`, `status`, `provider_prediction_id`
+**Indexes**: `created_at`, `status`, `provider_prediction_id`, `user_id` + `created_at`
 
 ### Database Commands
 ```bash
@@ -213,12 +231,11 @@ bun run db:studio    # Open Drizzle Studio GUI
 ## 6. Payments Integration Summary
 
 ### Current Status
-**No payment system implemented**
+**Credit system implemented; Polar payments wiring pending**
 
-- No payment processing
-- No subscription management
-- No usage limits or quotas
-- Free access to all functionality
+- 1 free credit on signup (configurable)
+- Credits deducted per generation; refunds on provider failures
+- Purchase flows planned via Polar; not yet wired
 
 ---
 
@@ -247,16 +264,17 @@ Client Request → Next.js (web) → Hono API → PostgreSQL + Eachlabs API → 
 ### Current Security Posture
 
 #### Strengths
+- Better Auth for user sessions (email + anonymous); API endpoints require auth where applicable
 - API key stored in environment variable (server-side only)
 - Input validation with Zod schemas
 - CORS configuration for allowed origins
 - Separate API server (not exposed through Next.js)
+- Rate limiting on predictions/credits/admin routes
 
 #### Areas for Improvement
-- No rate limiting implemented
-- No request signing or CSRF protection
-- No audit logging
-- No user authentication
+- Request signing/CSRF for web UI
+- Audit logging for admin/credit operations
+-.env validation/typing
 
 ---
 
@@ -357,8 +375,9 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:3002
 
 | Endpoint | Method | Auth | Request | Response | Handler |
 |----------|--------|------|---------|----------|---------|
-| /api/predictions | POST | None | JSON body | predictionID | `apps/api/src/routes/predictions.ts` |
-| /api/predictions/{id} | GET | None | Path param | Prediction status | `apps/api/src/routes/predictions.ts` |
+| /api/predictions | GET | Session | limit, offset | history + pagination | `apps/api/src/routes/predictions.ts` |
+| /api/predictions | POST | Session | JSON body | predictionID | `apps/api/src/routes/predictions.ts` |
+| /api/predictions/{id} | GET | Session | Path param | Prediction status | `apps/api/src/routes/predictions.ts` |
 | / | GET | None | None | "API is running" | `apps/api/src/index.ts` |
 | /health | GET | None | None | `{status: "ok"}` | `apps/api/src/index.ts` |
 
