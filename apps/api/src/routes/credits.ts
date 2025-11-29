@@ -2,7 +2,7 @@ import { Hono } from "hono"
 import { eq, desc, sql } from "drizzle-orm"
 
 import { db } from "../db"
-import { userCreditBalances, creditTransactions, creditPackages } from "../db/schema"
+import { userCreditBalances, creditTransactions, creditPackages } from "../db/schemas"
 import { auth } from "../auth"
 
 type CreditTransactionType =

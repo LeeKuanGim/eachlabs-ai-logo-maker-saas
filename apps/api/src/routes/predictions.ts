@@ -4,7 +4,7 @@ import { z } from "zod"
 import type { StatusCode } from "hono/utils/http-status"
 
 import { db } from "../db"
-import { logoGenerations } from "../db/schema"
+import { logoGenerations } from "../db/schemas"
 import { getAuthUser, getUserBalance, deductCredits, addCredits } from "./credits"
 
 const EACHLABS_API_URL = "https://api.eachlabs.ai/v1/prediction"

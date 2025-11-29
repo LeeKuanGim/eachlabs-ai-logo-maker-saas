@@ -3,7 +3,7 @@ import { eq, desc, and, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import { db } from "../db"
-import { logoGenerations } from "../db/schema"
+import { logoGenerations } from "../db/schemas"
 import { getAuthUser } from "./credits"
 
 const querySchema = z.object({

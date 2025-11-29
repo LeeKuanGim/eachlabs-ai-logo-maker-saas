@@ -3,7 +3,7 @@ import { eq, desc } from "drizzle-orm"
 import { z } from "zod"
 
 import { db } from "../db"
-import { userCreditBalances, creditTransactions } from "../db/schema"
+import { userCreditBalances, creditTransactions } from "../db/schemas"
 import { getAuthUser, addCredits, getUserBalance } from "./credits"
 
 type AdminUser = { id: string; email: string }

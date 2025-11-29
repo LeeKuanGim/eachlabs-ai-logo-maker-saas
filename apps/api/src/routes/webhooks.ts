@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm"
 import crypto from "crypto"
 
 import { db } from "../db"
-import { creditTransactions, creditPackages } from "../db/schema"
+import { creditTransactions, creditPackages } from "../db/schemas"
 import { addCredits } from "./credits"
 
 // ============================================================================

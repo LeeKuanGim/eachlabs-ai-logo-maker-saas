@@ -1,6 +1,6 @@
 import "dotenv/config"
 import { db } from "./index"
-import { creditPackages } from "./schema"
+import { creditPackages } from "./schemas"
 
 const packages = [
   {
