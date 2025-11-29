@@ -124,6 +124,10 @@ BETTER_AUTH_SECRET=change-me
 BETTER_AUTH_URL=http://localhost:3002
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3002
 GENERATION_RETENTION_DAYS=365
+POLAR_ACCESS_TOKEN=your_polar_org_access_token
+POLAR_CHECKOUT_SUCCESS_URL=http://localhost:3000/checkout/success?checkout_id={CHECKOUT_ID}
+POLAR_CHECKOUT_RETURN_URL=http://localhost:3000/account
+POLAR_SERVER=sandbox
 PGPOOL_MAX=50
 PGPOOL_IDLE_MS=30000
 PGPOOL_CONN_TIMEOUT_MS=5000

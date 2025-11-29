@@ -66,6 +66,7 @@ bun run db:studio              # Open Drizzle Studio GUI
 - Required envs for Web: `NEXT_PUBLIC_API_BASE_URL` (default: `http://localhost:3002`).
 - CORS: `ALLOWED_ORIGINS` comma-separated list for the API.
 - History retention: `GENERATION_RETENTION_DAYS` (default 365) applies to `/api/predictions` history listing.
+- Polar checkout: `POLAR_ACCESS_TOKEN` (required), `POLAR_SERVER` (`sandbox`|`production`, default `sandbox`), `POLAR_CHECKOUT_SUCCESS_URL` (include `{CHECKOUT_ID}` placeholder), `POLAR_CHECKOUT_RETURN_URL` (optional back link).
 - Do not commit secrets. `.env` / `.env.local` files are ignored.
 
 ## Architecture Overview

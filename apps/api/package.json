@@ -16,14 +16,16 @@
     "db:seed": "bun run src/db/seed.ts"
   },
   "dependencies": {
-    "better-auth": "^0.7.3",
+    "@polar-sh/better-auth": "^1.5.0",
+    "@polar-sh/sdk": "^0.41.5",
+    "better-auth": "0.7.5",
     "drizzle-orm": "^0.44.7",
     "hono": "^4.10.6",
     "pg": "^8.16.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@better-auth/cli": "^0.7.3",
+    "@better-auth/cli": "0.7.5",
     "@types/pg": "^8.15.6",
     "bun-types": "1.2.22",
     "dotenv": "^17.2.3",
