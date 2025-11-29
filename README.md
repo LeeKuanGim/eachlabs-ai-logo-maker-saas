@@ -47,6 +47,7 @@
   - Reve Text
 - **Kredi Tabanlı**: Her logo çıktısı 1 kredi; 1-4 adet logo tek seferde oluşturulabilir
 - **Renk Önizleme**: Seçtiğiniz renkleri anlık görüntüleme
+- **Geçmiş Kaydı**: Üretilen logolar veritabanına yazılır, sadece ilgili kullanıcı kendi geçmişini görür
 
 ### 🖼️ Kullanıcı Deneyimi
 - **Gerçek Zamanlı Önizleme**: Loading state ile animasyonlu gösterim
@@ -81,7 +82,7 @@
 
 ### Backend/API
 - **Framework**: [Hono](https://hono.dev/) + Bun runtime (REST-first, edge friendly)
-- **Auth**: [Better Auth](https://better-auth.com/) (server hosted in API, Next.js uses client SDK) with anonymous sessions enabled
+- **Auth**: [Better Auth](https://better-auth.com/) (server hosted in API, Next.js uses client SDK) with anonymous oturum desteği; `/api/predictions` ve geçmiş listesi oturum gerektirir
 
 ### Developer Tools
 - **Package Manager**: [Bun](https://bun.sh/) (ana paket yöneticisi)
@@ -122,6 +123,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:3002
 BETTER_AUTH_SECRET=change-me
 BETTER_AUTH_URL=http://localhost:3002
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3002
+GENERATION_RETENTION_DAYS=365
 PGPOOL_MAX=50
 PGPOOL_IDLE_MS=30000
 PGPOOL_CONN_TIMEOUT_MS=5000
@@ -234,6 +236,8 @@ Yerel baz URL: `http://localhost:3002`
 
 **POST** `/api/predictions`
 
+**Auth**: Better Auth oturumu gerektirir (kullanıcıya ait kredilerden düşer).
+
 **Request Body:**
 ```typescript
 {
@@ -254,9 +258,33 @@ Yerel baz URL: `http://localhost:3002`
 }
 ```
 
+### Geçmiş Listeleme Endpoint
+
+**GET** `/api/predictions`
+
+**Auth**: Gerekli (oturum açmış kullanıcı kendi geçmişini görür).
+
+**Query Parametreleri:**
+- `limit`: Varsayılan 50, en fazla 100
+- `offset`: Varsayılan 0
+
+**Davranış:**
+- Son 365 gün (veya `GENERATION_RETENTION_DAYS`) içindeki kayıtları döner.
+- Sadece oturum açmış kullanıcının kayıtları listelenir.
+
+**Response:**
+```typescript
+{
+  history: LogoGeneration[];
+  pagination: { limit: number; offset: number };
+}
+```
+
 ### Logo Durumu Endpoint
 
 **GET** `/api/predictions/{predictionID}`
+
+**Auth**: Gerekli; sadece sahibine açık.
 
 **Response:**
 ```typescript
