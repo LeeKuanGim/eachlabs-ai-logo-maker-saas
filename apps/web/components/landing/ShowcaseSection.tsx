@@ -3,22 +3,23 @@
 import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const showcaseLogos = [
-  { id: 1, name: "Finance App", icon: "F" },
-  { id: 2, name: "Health Tracker", icon: "+" },
-  { id: 3, name: "Music Player", icon: "►" },
-  { id: 4, name: "Task Manager", icon: "✓" },
-  { id: 5, name: "Social Network", icon: "@" },
-  { id: 6, name: "E-commerce", icon: "$" },
-  { id: 7, name: "Weather App", icon: "☀" },
-  { id: 8, name: "Fitness Coach", icon: "♥" },
+const showcaseLogosData = [
+  { id: 1, nameKey: "financeApp", icon: "F" },
+  { id: 2, nameKey: "healthTracker", icon: "+" },
+  { id: 3, nameKey: "musicPlayer", icon: "►" },
+  { id: 4, nameKey: "taskManager", icon: "✓" },
+  { id: 5, nameKey: "socialNetwork", icon: "@" },
+  { id: 6, nameKey: "ecommerce", icon: "$" },
+  { id: 7, nameKey: "weatherApp", icon: "☀" },
+  { id: 8, nameKey: "fitnessCoach", icon: "♥" },
 ]
 
 interface ShowcaseCardProps {
-  logo: typeof showcaseLogos[0]
+  logo: { id: number; name: string; icon: string }
   index: number
   isVisible: boolean
 }
@@ -128,6 +129,12 @@ function ShowcaseCard({ logo, index, isVisible }: ShowcaseCardProps) {
 export function ShowcaseSection() {
   const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
+  const t = useTranslations("showcase")
+
+  const showcaseLogos = showcaseLogosData.map((logo) => ({
+    ...logo,
+    name: t(`logoNames.${logo.nameKey}`),
+  }))
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -164,13 +171,13 @@ export function ShowcaseSection() {
           transition={{ duration: 0.5 }}
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-sm font-medium mb-6 text-primary/80">
-            Showcase
+            {t("badge")}
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Generated <span className="text-primary">Masterpieces</span>
+            {t("title1")} <span className="text-primary">{t("title2")}</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            High-quality logos ready for your production environment.
+            {t("description")}
           </p>
         </motion.div>
 
@@ -197,7 +204,7 @@ export function ShowcaseSection() {
             href="/create"
             className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all duration-300"
           >
-            Start generating logos
+            {t("startGenerating")}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>

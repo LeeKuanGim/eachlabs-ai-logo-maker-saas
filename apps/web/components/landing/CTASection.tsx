@@ -3,19 +3,19 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { useTranslations } from "next-intl"
 import { ArrowRight, Check } from "lucide-react"
 import { RainbowButton } from "@/components/ui/rainbow-button"
 import { cn } from "@/lib/utils"
 
-const benefits = [
-  "No credit card needed",
-  "Commercial use allowed",
-  "Instant downloads",
-]
+const benefitKeys = ["noCreditCard", "commercialUse", "instantDownloads"] as const
 
 export function CTASection() {
   const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
+  const t = useTranslations("cta")
+
+  const benefits = benefitKeys.map((key) => t(`benefits.${key}`))
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -58,7 +58,7 @@ export function CTASection() {
             animate={isVisible ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            Get Started
+            {t("badge")}
           </motion.div>
 
           {/* Heading */}
@@ -68,9 +68,9 @@ export function CTASection() {
             animate={isVisible ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Ready to Create Your
+            {t("title1")}
             <span className="block text-primary">
-              Perfect Logo?
+              {t("title2")}
             </span>
           </motion.h2>
 
@@ -81,8 +81,7 @@ export function CTASection() {
             animate={isVisible ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            Join thousands of developers and entrepreneurs who have already created
-            stunning logos with AI.
+            {t("description")}
           </motion.p>
 
           {/* CTA Button */}
@@ -93,7 +92,7 @@ export function CTASection() {
           >
             <RainbowButton asChild className="h-14 px-10 text-lg">
               <Link href="/create">
-                Start Creating Now
+                {t("button")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </RainbowButton>

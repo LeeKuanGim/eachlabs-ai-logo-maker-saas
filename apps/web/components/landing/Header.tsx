@@ -1,28 +1,37 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useSyncExternalStore } from "react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
+import { useTranslations } from "next-intl"
 import { Moon, Sun, Menu, X, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { cn } from "@/lib/utils"
 
-const navLinks = [
-  { href: "#features", label: "Features" },
-  { href: "#showcase", label: "Showcase" },
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "/history", label: "History" },
-]
+function useIsMounted() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
+}
 
 export function Header() {
   const { setTheme, resolvedTheme } = useTheme()
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const mounted = useIsMounted()
+  const t = useTranslations("header")
 
-  const [mounted, setMounted] = useState(false)
+  const navLinks = [
+    { href: "#features", label: t("features") },
+    { href: "#showcase", label: t("showcase") },
+    { href: "#how-it-works", label: t("howItWorks") },
+    { href: "/history", label: t("history") },
+  ]
 
   useEffect(() => {
-    setMounted(true)
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
     }
@@ -74,6 +83,9 @@ export function Header() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
+            {/* Language switcher */}
+            <LanguageSwitcher />
+
             {/* Theme toggle */}
             {mounted && resolvedTheme ? (
               <Button
@@ -94,7 +106,7 @@ export function Header() {
                     ? "rotate-0 scale-100 opacity-100"
                     : "-rotate-90 scale-0 opacity-0"
                 )} />
-                <span className="sr-only">Toggle theme</span>
+                <span className="sr-only">{t("toggleTheme")}</span>
               </Button>
             ) : (
               <div className="h-10 w-10" />
@@ -103,7 +115,7 @@ export function Header() {
             {/* CTA Button */}
             <Button asChild className="hidden sm:inline-flex">
               <Link href="/create">
-                Create Logo
+                {t("createLogo")}
               </Link>
             </Button>
 
@@ -119,7 +131,7 @@ export function Header() {
               ) : (
                 <Menu className="h-5 w-5" />
               )}
-              <span className="sr-only">Toggle menu</span>
+              <span className="sr-only">{t("toggleMenu")}</span>
             </Button>
           </div>
         </nav>
@@ -144,7 +156,7 @@ export function Header() {
             ))}
             <Button asChild className="mt-2">
               <Link href="/create">
-                Create Logo
+                {t("createLogo")}
               </Link>
             </Button>
           </div>

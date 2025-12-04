@@ -1,27 +1,8 @@
 "use client"
 
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { Sparkles, Github, Twitter } from "lucide-react"
-
-const footerLinks = {
-  product: [
-    { label: "Features", href: "#features" },
-    { label: "Showcase", href: "#showcase" },
-    { label: "How It Works", href: "#how-it-works" },
-    { label: "Create Logo", href: "/create" },
-  ],
-  company: [
-    { label: "About", href: "#" },
-    { label: "Blog", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Contact", href: "#" },
-  ],
-  legal: [
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
-    { label: "Cookie Policy", href: "#" },
-  ],
-}
 
 const socialLinks = [
   { label: "Twitter", icon: Twitter, href: "https://twitter.com" },
@@ -29,6 +10,27 @@ const socialLinks = [
 ]
 
 export function Footer() {
+  const t = useTranslations("footer")
+
+  const footerLinks = {
+    product: [
+      { label: t("links.features"), href: "#features" },
+      { label: t("links.showcase"), href: "#showcase" },
+      { label: t("links.howItWorks"), href: "#how-it-works" },
+      { label: t("links.createLogo"), href: "/create" },
+    ],
+    company: [
+      { label: t("links.about"), href: "#" },
+      { label: t("links.blog"), href: "#" },
+      { label: t("links.careers"), href: "#" },
+      { label: t("links.contact"), href: "#" },
+    ],
+    legal: [
+      { label: t("links.privacyPolicy"), href: "#" },
+      { label: t("links.termsOfService"), href: "#" },
+      { label: t("links.cookiePolicy"), href: "#" },
+    ],
+  }
   return (
     <footer className="border-t border-border/50 bg-muted/30">
       {/* Dither border */}
@@ -46,8 +48,7 @@ export function Footer() {
               <span className="font-bold text-xl">LogoLoco</span>
             </Link>
             <p className="text-muted-foreground text-sm mb-6 max-w-xs">
-              Create stunning, professional logos with the power of AI.
-              No design skills required.
+              {t("tagline")}
             </p>
             {/* Social links */}
             <div className="flex gap-4">
@@ -68,7 +69,7 @@ export function Footer() {
 
           {/* Product links */}
           <div>
-            <h3 className="font-semibold text-sm mb-4">Product</h3>
+            <h3 className="font-semibold text-sm mb-4">{t("sections.product")}</h3>
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
@@ -85,7 +86,7 @@ export function Footer() {
 
           {/* Company links */}
           <div>
-            <h3 className="font-semibold text-sm mb-4">Company</h3>
+            <h3 className="font-semibold text-sm mb-4">{t("sections.company")}</h3>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
@@ -102,7 +103,7 @@ export function Footer() {
 
           {/* Legal links */}
           <div>
-            <h3 className="font-semibold text-sm mb-4">Legal</h3>
+            <h3 className="font-semibold text-sm mb-4">{t("sections.legal")}</h3>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
@@ -121,10 +122,10 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} LogoLoco. All rights reserved.
+            © {new Date().getFullYear()} LogoLoco. {t("copyright")}
           </p>
           <p className="text-sm text-muted-foreground">
-            Powered by AI. Made with ❤️
+            {t("madeWith")} ❤️
           </p>
         </div>
       </div>

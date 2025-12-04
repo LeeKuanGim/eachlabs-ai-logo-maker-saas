@@ -2,49 +2,22 @@
 
 import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
-import { Sparkles, Layers, Download, Palette, Zap, Shield } from "lucide-react"
+import { useTranslations } from "next-intl"
+import { Sparkles, Layers, Download, Palette, Zap, Shield, type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const features = [
-  {
-    icon: Sparkles,
-    title: "AI-Powered Generation",
-    description: "Advanced AI models create unique, professional logos from simple text descriptions.",
-  },
-  {
-    icon: Layers,
-    title: "Multiple AI Models",
-    description: "Choose from different AI models optimized for various styles - minimalist, detailed, or artistic.",
-  },
-  {
-    icon: Download,
-    title: "Instant Downloads",
-    description: "Get your logos instantly in high-resolution PNG format, ready for app stores.",
-  },
-  {
-    icon: Palette,
-    title: "Color Intelligence",
-    description: "Specify your brand colors and watch AI incorporate them seamlessly into your design.",
-  },
-  {
-    icon: Zap,
-    title: "Lightning Fast",
-    description: "Generate professional logos in under 60 seconds. Iterate quickly until perfect.",
-  },
-  {
-    icon: Shield,
-    title: "Commercial Ready",
-    description: "All generated logos are unique and ready for commercial use in your applications.",
-  },
-]
+const featureIcons = [Sparkles, Layers, Download, Palette, Zap, Shield] as const
+const featureKeys = ["aiPowered", "multipleModels", "instantDownloads", "colorIntelligence", "lightningFast", "commercialReady"] as const
 
 interface FeatureCardProps {
-  feature: typeof features[0]
+  icon: LucideIcon
+  title: string
+  description: string
   index: number
   isVisible: boolean
 }
 
-function FeatureCard({ feature, index, isVisible }: FeatureCardProps) {
+function FeatureCard({ icon: Icon, title, description, index, isVisible }: FeatureCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const cardRef = useRef<HTMLDivElement>(null)
@@ -113,7 +86,7 @@ function FeatureCard({ feature, index, isVisible }: FeatureCardProps) {
             transition: "transform 0.3s ease",
           }}
         >
-          <feature.icon className={cn(
+          <Icon className={cn(
             "h-6 w-6 text-primary/70 transition-colors duration-300",
             isHovered && "text-primary"
           )} />
@@ -130,7 +103,7 @@ function FeatureCard({ feature, index, isVisible }: FeatureCardProps) {
             transition: "transform 0.3s ease",
           }}
         >
-          {feature.title}
+          {title}
         </h3>
         <p
           className="text-muted-foreground text-sm leading-relaxed"
@@ -139,7 +112,7 @@ function FeatureCard({ feature, index, isVisible }: FeatureCardProps) {
             transition: "transform 0.3s ease",
           }}
         >
-          {feature.description}
+          {description}
         </p>
 
         {/* Corner accent */}
@@ -160,6 +133,7 @@ function FeatureCard({ feature, index, isVisible }: FeatureCardProps) {
 export function FeaturesSection() {
   const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
+  const t = useTranslations("features")
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -202,24 +176,25 @@ export function FeaturesSection() {
           transition={{ duration: 0.5 }}
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-sm font-medium mb-6 text-primary/80">
-            Features
+            {t("badge")}
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
-            Everything You Need to
-            <span className="block text-primary">Create Amazing Logos</span>
+            {t("title1")}
+            <span className="block text-primary">{t("title2")}</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            Powerful features designed for developers and entrepreneurs who want
-            professional results without the hassle.
+            {t("description")}
           </p>
         </motion.div>
 
         {/* Features grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {features.map((feature, index) => (
+          {featureKeys.map((key, index) => (
             <FeatureCard
-              key={feature.title}
-              feature={feature}
+              key={key}
+              icon={featureIcons[index]}
+              title={t(`items.${key}.title`)}
+              description={t(`items.${key}.description`)}
               index={index}
               isVisible={isVisible}
             />
