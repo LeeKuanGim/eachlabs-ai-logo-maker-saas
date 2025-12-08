@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, useMemo, useSyncExternalStore } from "react"
+import { createContext, useContext, useState, useCallback, useMemo, useSyncExternalStore, useEffect } from "react"
 import { NextIntlClientProvider } from "next-intl"
 import { type Locale, defaultLocale, locales, LOCALE_STORAGE_KEY } from "@/lib/i18n/config"
 
@@ -48,6 +48,10 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     () => defaultLocale
   )
   const [locale, setLocaleState] = useState<Locale>(storedLocale)
+
+  useEffect(() => {
+    setLocaleState(storedLocale)
+  }, [storedLocale])
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale)
