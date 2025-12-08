@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { ArrowRight, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { LogoCarousel } from "@/components/landing/LogoCarousel"
@@ -9,6 +10,7 @@ import { cn } from "@/lib/utils"
 
 export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false)
+  const t = useTranslations("hero")
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100)
@@ -38,7 +40,7 @@ export function HeroSection() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
               </span>
-              AI-Powered Logo Generation
+              {t("badge")}
             </div>
 
             {/* Heading */}
@@ -48,9 +50,9 @@ export function HeroSection() {
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               )}
             >
-              <span className="block">Create Stunning</span>
+              <span className="block">{t("title1")}</span>
               <span className="block bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                Logos in Seconds
+                {t("title2")}
               </span>
             </h1>
 
@@ -61,8 +63,7 @@ export function HeroSection() {
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               )}
             >
-              Transform your ideas into professional, app-ready logos with the power of AI.
-              No design skills needed. Just describe, generate, and download.
+              {t("description")}
             </p>
 
             {/* CTA Buttons */}
@@ -74,7 +75,7 @@ export function HeroSection() {
             >
               <Button asChild className="h-12 px-8 text-base shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:shadow-[0_0_30px_rgba(168,85,247,0.7)] transition-shadow">
                 <Link href="/create">
-                  Start Creating
+                  {t("startCreating")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -82,7 +83,7 @@ export function HeroSection() {
               <Button variant="outline" className="h-12 px-8 text-base" asChild>
                 <Link href="#how-it-works">
                   <Play className="mr-2 h-4 w-4" />
-                  See How It Works
+                  {t("seeHowItWorks")}
                 </Link>
               </Button>
             </div>
@@ -95,9 +96,9 @@ export function HeroSection() {
               )}
             >
               {[
-                { value: "10K+", label: "Logos Created" },
-                { value: "<60s", label: "Generation Time" },
-                { value: "3", label: "AI Models" },
+                { value: "10K+", label: t("stats.logosCreated") },
+                { value: "<60s", label: t("stats.generationTime") },
+                { value: "3", label: t("stats.aiModels") },
               ].map((stat) => (
                 <div key={stat.label} className="text-center lg:text-left">
                   <div className="text-2xl md:text-3xl font-bold">{stat.value}</div>
@@ -130,7 +131,7 @@ export function HeroSection() {
         )}
       >
         <div className="flex flex-col items-center gap-2 text-muted-foreground">
-          <span className="text-xs uppercase tracking-wider">Scroll</span>
+          <span className="text-xs uppercase tracking-wider">{t("scroll")}</span>
           <div className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex justify-center pt-2">
             <div className="w-1 h-2 rounded-full bg-muted-foreground animate-bounce" />
           </div>

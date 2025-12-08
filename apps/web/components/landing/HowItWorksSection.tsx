@@ -2,32 +2,16 @@
 
 import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
-import { MessageSquare, Sparkles, Download } from "lucide-react"
+import { useTranslations } from "next-intl"
+import { MessageSquare, Sparkles, Download, type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const steps = [
-  {
-    number: "01",
-    icon: MessageSquare,
-    title: "Describe Your Vision",
-    description: "Enter your app name and describe what you want. Be as simple or detailed as you like.",
-  },
-  {
-    number: "02",
-    icon: Sparkles,
-    title: "AI Creates Magic",
-    description: "Our advanced AI models analyze your input and generate multiple unique logo options.",
-  },
-  {
-    number: "03",
-    icon: Download,
-    title: "Download & Use",
-    description: "Pick your favorite, download in high resolution, and use it immediately.",
-  },
-]
+const stepIcons = [MessageSquare, Sparkles, Download] as const
+const stepKeys = ["step1", "step2", "step3"] as const
+const stepNumbers = ["01", "02", "03"] as const
 
 interface StepCardProps {
-  step: typeof steps[0]
+  step: { number: string; icon: LucideIcon; title: string; description: string }
   index: number
   isVisible: boolean
   isActive: boolean
@@ -164,6 +148,14 @@ export function HowItWorksSection() {
   const [activeStep, setActiveStep] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
+  const t = useTranslations("howItWorks")
+
+  const steps = stepKeys.map((key, index) => ({
+    number: stepNumbers[index],
+    icon: stepIcons[index],
+    title: t(`steps.${key}.title`),
+    description: t(`steps.${key}.description`),
+  }))
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -191,7 +183,7 @@ export function HowItWorksSection() {
     }, 4000)
 
     return () => clearInterval(interval)
-  }, [isVisible])
+  }, [isVisible, steps.length])
 
   return (
     <section
@@ -214,14 +206,14 @@ export function HowItWorksSection() {
           transition={{ duration: 0.5 }}
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-sm font-medium mb-6 text-primary/80">
-            How It Works
+            {t("badge")}
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
-            Three Simple Steps to
-            <span className="block text-primary">Your Perfect Logo</span>
+            {t("title1")}
+            <span className="block text-primary">{t("title2")}</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            No complicated tools, no design skills needed. Just describe, generate, and download.
+            {t("description")}
           </p>
         </motion.div>
 
