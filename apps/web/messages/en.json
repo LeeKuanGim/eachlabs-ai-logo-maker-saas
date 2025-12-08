@@ -128,5 +128,51 @@
   },
   "languageSwitcher": {
     "label": "Language"
+  },
+  "pricing": {
+    "badge": "Pricing",
+    "title": "Credit packs built for fast logo runs",
+    "description": "One-time credit packs. 1 credit = 1 logo output (up to 4 per run). PNG downloads and 1-year storage included.",
+    "note": "Credits never auto-renew and are processed via Polar checkout.",
+    "oneTime": "One-time purchase",
+    "featureReminder": "Credits cover AI generation and PNG downloads with commercial rights.",
+    "actions": {
+      "buyCredits": "Buy credits",
+      "useCredit": "Use free credit"
+    },
+    "features": {
+      "perRun": "Up to 4 logo options per run (1 credit each)",
+      "commercial": "Full commercial rights on every logo",
+      "png": "PNG downloads with light/dark previews",
+      "retention": "1-year storage with deletion notice"
+    },
+    "packages": {
+      "starter": {
+        "name": "Starter",
+        "credits": "1 credit",
+        "price": "Free",
+        "description": "Included signup bonus—generate your first logo on us.",
+        "badge": "Included"
+      },
+      "maker": {
+        "name": "Maker",
+        "credits": "10 credits",
+        "price": "$9",
+        "description": "Great for side projects and quick iterations."
+      },
+      "team": {
+        "name": "Team",
+        "credits": "50 credits",
+        "price": "$39",
+        "description": "Best value for shipping multiple brands.",
+        "badge": "Best value"
+      },
+      "studio": {
+        "name": "Studio",
+        "credits": "200 credits",
+        "price": "$149",
+        "description": "For agencies and busy teams; covers high-volume runs."
+      }
+    }
   }
 }

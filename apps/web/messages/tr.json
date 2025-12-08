@@ -128,5 +128,51 @@
   },
   "languageSwitcher": {
     "label": "Dil"
+  },
+  "pricing": {
+    "badge": "Fiyatlandirma",
+    "title": "Hizli logo icin kredi paketleri",
+    "description": "Tek seferlik kredi paketleri. 1 kredi = 1 logo cikisi (her kosumda 4 adede kadar). PNG indirme ve 1 yillik saklama dahildir.",
+    "note": "Krediler otomatik yenilenmez ve Polar odemesiyle islenir.",
+    "oneTime": "Tek seferlik satin alma",
+    "featureReminder": "Krediler yapay zeka uretimi ve ticari hakli PNG indirmelerini kapsar.",
+    "actions": {
+      "buyCredits": "Kredi satin al",
+      "useCredit": "Ucretsiz krediyi kullan"
+    },
+    "features": {
+      "perRun": "Her kosumda 4 logo secenegi (her biri 1 kredi)",
+      "commercial": "Her logo icin tam ticari haklar",
+      "png": "Acik/koyu onizlemeli PNG indirmeleri",
+      "retention": "1 yillik saklama ve silme bildirimi"
+    },
+    "packages": {
+      "starter": {
+        "name": "Baslangic",
+        "credits": "1 kredi",
+        "price": "Ucretsiz",
+        "description": "Kayit bonusu dahil—ilk logonu bizden al.",
+        "badge": "Dahil"
+      },
+      "maker": {
+        "name": "Maker",
+        "credits": "10 kredi",
+        "price": "$9",
+        "description": "Yan projeler ve hizli yinelemeler icin."
+      },
+      "team": {
+        "name": "Ekip",
+        "credits": "50 kredi",
+        "price": "$39",
+        "description": "Birden fazla marka icin en iyi deger.",
+        "badge": "En iyi deger"
+      },
+      "studio": {
+        "name": "Studyo",
+        "credits": "200 kredi",
+        "price": "$149",
+        "description": "Ajanslar ve yogun kosumlar icin."
+      }
+    }
   }
 }
