@@ -4,6 +4,7 @@ import { FeaturesSection } from "@/components/landing/FeaturesSection"
 import { ShowcaseSection } from "@/components/landing/ShowcaseSection"
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
 import { CTASection } from "@/components/landing/CTASection"
+import { PricingSection } from "@/components/landing/PricingSection"
 import { Footer } from "@/components/landing/Footer"
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
       <FeaturesSection />
       <ShowcaseSection />
       <HowItWorksSection />
+      <PricingSection />
       <CTASection />
       <Footer />
     </main>
